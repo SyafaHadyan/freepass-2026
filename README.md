@@ -117,7 +117,17 @@ We want to see your perspective about these problems. You can define various typ
 
 You might be overwhelmed by these requirements. Don't worry, here's a list of some tools that you could use (it's not required to use all of them nor any of them):
 
-1. [Example Project](https:2. [Git](https:3. [Cheatsheets](https:4. [REST API](https:5. [Insomnia REST Client](https:6. [Test-Driven Development](https:7. [Clean Architecture](https:8. [GraphQL](https:9. [gRPC](https:10. [Docker Compose](https:
+1. [Example Project](https://github.com/meong1234/fintech)
+2. [Git](https://try.github.io/)
+3. [Cheatsheets](https://devhints.io/)
+4. [REST API](https://restfulapi.net/)
+5. [Insomnia REST Client](https://insomnia.rest/)
+6. [Test-Driven Development](https://www.freecodecamp.org/news/test-driven-development-what-it-is-and-what-it-is-not-41fa6bca02a2/)
+7. [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
+8. [GraphQL](https://graphql.org/)
+9. [gRPC](https://grpc.io/)
+10. [Docker Compose](https://docs.docker.com/compose/install/)
+
 ## **🔪** Accepted Weapons
 
 > BEFORE CHOOSING YOUR LANGUAGE, PLEASE VISIT OUR [CONVENTION](CONVENTION.md) ON THIS PROJECT
@@ -148,7 +158,7 @@ The implementation of this project MUST be in the form of a REST, gRPC, or Graph
 
 ## **📞** Contact
 
-Have any questions? You can contact [Abil](https:
+Have any questions? You can contact [Abil](https://www.instagram.com/abilfqn/).
 ## **🎁** Submission
 
 Please follow the instructions on the [Contributing guide](CONTRIBUTING.md).
