@@ -10,6 +10,5 @@ Here’s how to submit a Pull Request (PR):
 3. Create a branch with a descriptive name to work (i.e., `git checkout -b your-name`).
 4. Make changes, commit them, and push the branch to your repository fork.
 5. [Submit a pull request](https://help.github.com/articles/using-pull-requests) to the master branch.
-6. Please leave us your full name, NIM, and WhatsApp number on the pull request, and we will contact you for further information. Take note of this if you’re planning to use a pseudonymous GitHub account, as your real identity would have to be included in the pull request.
-
-
+6. Please leave us your full name and NIM on the pull request. For example (Muhammad Atha Tsaqif - 245150201111002)
+7. After submit Pull Request, please fill this [form](https://forms.gle/dSz7zXCMMsWfYtN1A) and we will contact you for further information
