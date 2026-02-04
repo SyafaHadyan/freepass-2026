@@ -19,31 +19,14 @@ type User struct {
 	UpdatedAt         time.Time      `json:"updated_at" gorm:"type:timestamp;autoUpdateTime"`
 	DeletedAt         gorm.DeletedAt `gorm:"index"`
 	UserDetail        UserDetail
-	Friend            Friend
-	FriendRequest     FriendRequest
 	PasswordChange    []PasswordChange
 	PasswordResetCode []PasswordResetCode
 	UserReporting     []UserReporting
 }
 
 type UserDetail struct {
-	UserID       uuid.UUID `json:"user_id" gorm:"type:char(36);primaryKey"`
-	ProfileIndex uint      `json:"profile_index" gorm:"type:tinyint unsigned"`
-	AcceptFriend bool      `json:"accept_friend" gorm:"type:boolean"`
-	Bio          string    `json:"bio" gorm:"type:varchar(128)"`
-	LastActivity time.Time `json:"last_activity" gorm:"type:timestamp;autoUpdateTime"`
-}
-
-type Friend struct {
-	UserID   uuid.UUID `json:"user_id" gorm:"type:char(36);primaryKey"`
-	FriendID uuid.UUID `json:"friend_id" gorm:"type:char(36);primaryKey"`
-}
-
-type FriendRequest struct {
-	ID       uuid.UUID `json:"id" gorm:"type:char(36);primaryKey"`
-	UserID   uuid.UUID `json:"user_id" gorm:"type:char(36)"`
-	FriendID uuid.UUID `json:"friend_id" gorm:"type:char(36)"`
-	Accepted bool      `json:"accepted" gorm:"type:boolean"`
+	UserID uuid.UUID `json:"user_id" gorm:"type:char(36);primaryKey"`
+	Role   string    `json:"role" gorm:"type:varchar(128)"`
 }
 
 type Verification struct {
@@ -87,7 +70,6 @@ func (u *User) ParseToDTOResponseRegister() dto.ResponseRegister {
 	responseRegister.Name = u.Name
 	responseRegister.CreatedAt = u.CreatedAt
 	responseRegister.UpdatedAt = u.UpdatedAt
-	responseRegister.UserDetail.ProfileIndex = u.UserDetail.ProfileIndex
 
 	return responseRegister
 }
@@ -101,10 +83,6 @@ func (u *User) ParseToDTOResponseLogin() dto.ResponseLogin {
 	responseLogin.Name = u.Name
 	responseLogin.CreatedAt = u.CreatedAt
 	responseLogin.UpdatedAt = u.UpdatedAt
-	responseLogin.UserDetail.ProfileIndex = u.UserDetail.ProfileIndex
-	responseLogin.UserDetail.AcceptFriend = u.UserDetail.AcceptFriend
-	responseLogin.UserDetail.Bio = u.UserDetail.Bio
-	responseLogin.UserDetail.LastActivity = u.UserDetail.LastActivity
 
 	return responseLogin
 }
@@ -118,10 +96,6 @@ func (u *User) ParseToDTOResponseGetUserInfo() dto.ResponseGetUserInfo {
 	responseGetUserInfo.Name = u.Name
 	responseGetUserInfo.CreatedAt = u.CreatedAt
 	responseGetUserInfo.UpdatedAt = u.UpdatedAt
-	responseGetUserInfo.UserDetail.ProfileIndex = u.UserDetail.ProfileIndex
-	responseGetUserInfo.UserDetail.AcceptFriend = u.UserDetail.AcceptFriend
-	responseGetUserInfo.UserDetail.Bio = u.UserDetail.Bio
-	responseGetUserInfo.UserDetail.LastActivity = u.UserDetail.LastActivity
 
 	return responseGetUserInfo
 }
@@ -131,10 +105,6 @@ func (u *User) ParseToDTOResponseGetUserInfoPublic() dto.ResponseGetUserInfoPubl
 
 	responseGetUserInfoPublic.Username = u.Username
 	responseGetUserInfoPublic.Name = u.Name
-	responseGetUserInfoPublic.UserDetail.ProfileIndex = u.UserDetail.ProfileIndex
-	responseGetUserInfoPublic.UserDetail.AcceptFriend = u.UserDetail.AcceptFriend
-	responseGetUserInfoPublic.UserDetail.Bio = u.UserDetail.Bio
-	responseGetUserInfoPublic.UserDetail.LastActivity = u.UserDetail.LastActivity
 
 	return responseGetUserInfoPublic
 }
@@ -148,24 +118,6 @@ func (u *User) ParseToDTOResponseUpdateUserInfo() dto.ResponseUpdateUserInfo {
 	responseUdpateUserInfo.Name = u.Name
 	responseUdpateUserInfo.CreatedAt = u.CreatedAt
 	responseUdpateUserInfo.UpdatedAt = u.UpdatedAt
-	responseUdpateUserInfo.UserDetail.ProfileIndex = u.UserDetail.ProfileIndex
-	responseUdpateUserInfo.UserDetail.AcceptFriend = u.UserDetail.AcceptFriend
-	responseUdpateUserInfo.UserDetail.Bio = u.UserDetail.Bio
-	responseUdpateUserInfo.UserDetail.LastActivity = u.UserDetail.LastActivity
 
 	return responseUdpateUserInfo
-}
-
-func (fr *FriendRequest) ParseToDTOResponseGetFriendRequest() dto.ResponseGetFriendRequest {
-	return dto.ResponseGetFriendRequest{
-		UserID:   fr.UserID,
-		FriendID: fr.FriendID,
-	}
-}
-
-func (u *User) ParseToDTOResponseGetFriendList() dto.ResponseFriendList {
-	return dto.ResponseFriendList{
-		Username: u.Username,
-		Name:     u.Name,
-	}
 }

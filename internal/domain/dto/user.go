@@ -1,4 +1,4 @@
-// Package dto defines object in a standarized way to be used accross the project
+// Package dto defines standarized struct to be used as data exchange
 package dto
 
 import (
@@ -8,16 +8,15 @@ import (
 )
 
 type Register struct {
-	ID           uuid.UUID `json:"id"`
-	Email        string    `json:"email" validate:"required,email"`
-	Username     string    `json:"username" validate:"required,min=4,max=20"`
-	Password     string    `json:"password" validate:"required,min=4"`
-	Name         string    `json:"name" validate:"omitempty,min=3,max=29"`
-	ProfileIndex uint      `json:"profile_index" validate:"omitempty"`
+	ID       uuid.UUID `json:"id"`
+	Email    string    `json:"email" validate:"required,email"`
+	Username string    `json:"username" validate:"required,min=3,max=32"`
+	Password string    `json:"password" validate:"required,min=4"`
+	Name     string    `json:"name" validate:"omitempty,min=3,max=64"`
 }
 
 type Login struct {
-	Username string `json:"username" validate:"required,min=4,max=20"`
+	Username string `json:"username" validate:"required,min=3,max=32"`
 	Password string `json:"password" validate:"required,min=4"`
 }
 
@@ -26,10 +25,8 @@ type RenewToken struct {
 }
 
 type UserDetail struct {
-	UserID       uuid.UUID `json:"user_id"`
-	ProfileIndex uint      `json:"profile_index" validate:"omitempty"`
-	AcceptFriend bool      `json:"accept_friend"`
-	Bio          string    `json:"bio"`
+	UserID uuid.UUID `json:"user_id"`
+	Role   string    `json:"role"`
 }
 
 type AddFriend struct {
@@ -49,14 +46,14 @@ type CheckFriendRequestExist struct {
 type AcceptFriendRequest struct {
 	UserID   uuid.UUID `json:"user_id"`
 	FriendID uuid.UUID `json:"friend_id"`
-	Username string    `json:"username" validate:"required,min=4,max=20"`
+	Username string    `json:"username" validate:"required,min=3,max=32"`
 }
 
 type SendFriendRequest struct {
 	ID       uuid.UUID `json:"id"`
 	UserID   uuid.UUID `json:"user_id"`
 	FriendID uuid.UUID `json:"friend_id"`
-	Username string    `json:"username" validate:"required,min=4,max=20"`
+	Username string    `json:"username" validate:"required,min=3,max=32"`
 	Accepted bool      `json:"accepted"`
 }
 
@@ -66,21 +63,23 @@ type GetFriendRequest struct {
 }
 
 type GetUserID struct {
-	Username string `json:"username" validate:"required,min=4,max=20"`
+	Username string `json:"username" validate:"required,min=3,max=32"`
 }
 
 type GetUserInfoPublic struct {
-	Username string `json:"username" validate:"required,min=4,max=20"`
+	Username string `json:"username" validate:"required,min=3,max=32"`
 }
 
 type UpdateUserInfo struct {
-	Email        string `json:"email" validate:"omitempty,email"`
-	Username     string `json:"username" validate:"omitempty,min=4,max=20"`
-	Password     string `json:"password" validate:"omitempty,min=4"`
-	Name         string `json:"name" validate:"omitempty,min=3,max=29"`
-	ProfileIndex uint   `json:"profile_index" validate:"omitempty"`
-	AcceptFriend bool   `json:"accept_friend" validate:"omitempty,boolean"`
-	Bio          string `json:"bio" validate:"omitempty,min=0,max=128"`
+	Email    string `json:"email" validate:"omitempty,email"`
+	Username string `json:"username" validate:"omitempty,min=3,max=32"`
+	Password string `json:"password" validate:"omitempty,min=4"`
+	Name     string `json:"name" validate:"omitempty,min=3,max=64"`
+}
+
+type UpdateUserRole struct {
+	Username string `json:"username" validate:"required,min=3,max=32"`
+	Role     string `json:"role" validate:"required,oneof= USER CANTEEN ADMIN"`
 }
 
 type EmailVerification struct {
@@ -115,7 +114,7 @@ type ResetPasswordWithCode struct {
 	Email            string    `json:"email" validate:"required,email"`
 	Code             uint      `json:"code" validate:"required"`
 	Password         string    `json:"password" validate:"required,min=4"`
-	PasswordChangeId uuid.UUID `json:"password_change_id"`
+	PasswordChangeID uuid.UUID `json:"password_change_id"`
 }
 
 type ChangePassword struct {
@@ -136,9 +135,7 @@ type ResponseRegister struct {
 	Name       string    `json:"name"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
-	UserDetail struct {
-		ProfileIndex uint `json:"profile_index"`
-	} `json:"user_detail"`
+	UserDetail struct{}  `json:"user_detail"`
 }
 
 type ResponseLogin struct {
@@ -149,10 +146,7 @@ type ResponseLogin struct {
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
 	UserDetail struct {
-		ProfileIndex uint      `json:"profile_index"`
-		AcceptFriend bool      `json:"accept_friend"`
-		Bio          string    `json:"bio"`
-		LastActivity time.Time `json:"last_activity"`
+		Role string `json:"role"`
 	} `json:"user_detail"`
 }
 
@@ -164,10 +158,7 @@ type ResponseGetUserInfo struct {
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
 	UserDetail struct {
-		ProfileIndex uint      `json:"profile_index"`
-		AcceptFriend bool      `json:"accept_friend"`
-		Bio          string    `json:"bio"`
-		LastActivity time.Time `json:"last_activity"`
+		Role string `json:"role"`
 	} `json:"user_detail"`
 }
 
@@ -175,10 +166,7 @@ type ResponseGetUserInfoPublic struct {
 	Username   string `json:"username"`
 	Name       string `json:"name"`
 	UserDetail struct {
-		ProfileIndex uint      `json:"profile_index"`
-		AcceptFriend bool      `json:"accept_friend"`
-		Bio          string    `json:"bio"`
-		LastActivity time.Time `json:"last_activity"`
+		Role string `json:"role"`
 	} `json:"user_detail"`
 }
 
@@ -190,20 +178,6 @@ type ResponseUpdateUserInfo struct {
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
 	UserDetail struct {
-		ProfileIndex uint      `json:"profile_index"`
-		AcceptFriend bool      `json:"accept_friend"`
-		Bio          string    `json:"bio"`
-		LastActivity time.Time `json:"last_activity"`
+		Role string `json:"role"`
 	} `json:"user_detail"`
-}
-
-type ResponseGetFriendRequest struct {
-	UserID   uuid.UUID `json:"user_id"`
-	FriendID uuid.UUID `json:"friend_id"`
-	Username string    `json:"username"`
-}
-
-type ResponseFriendList struct {
-	Username string `json:"username"`
-	Name     string `json:"name"`
 }
