@@ -10,7 +10,7 @@ import (
 )
 
 type JWTItf interface {
-	GenerateToken(userID uuid.UUID) (string, error)
+	GenerateToken(userID uuid.UUID, role string) (string, error)
 	ValidateToken(tokenString string) (uuid.UUID, error)
 }
 
@@ -20,7 +20,8 @@ type JWT struct {
 }
 
 type Claims struct {
-	ID uuid.UUID
+	ID   uuid.UUID
+	Role string
 	jwt.RegisteredClaims
 }
 
@@ -31,9 +32,10 @@ func New(env *env.Env) *JWT {
 	}
 }
 
-func (j *JWT) GenerateToken(userID uuid.UUID) (string, error) {
+func (j *JWT) GenerateToken(userID uuid.UUID, role string) (string, error) {
 	claim := Claims{
-		ID: userID,
+		ID:   userID,
+		Role: role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(
 				time.Now().Add(time.Hour * 24 * time.Duration(j.expiredTime)),
