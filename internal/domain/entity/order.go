@@ -11,7 +11,7 @@ import (
 
 type Order struct {
 	ID        uuid.UUID      `json:"id" gorm:"type:char(36);primaryKey"`
-	CanteenID uuid.UUID      `json:"order_id" gorm:"type:char(36);"`
+	CanteenID uuid.UUID      `json:"canteen_id" gorm:"type:char(36);"`
 	UserID    uuid.UUID      `json:"user_id" gorm:"type:char(36);"`
 	MenuID    uuid.UUID      `json:"menu_id" gorm:"type:char(36);"`
 	Quantity  uint32         `json:"quantity" gorm:"type:uint32"`
