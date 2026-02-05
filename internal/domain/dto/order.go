@@ -1,7 +1,11 @@
 // Package dto defines standarized struct to be used as data exchange
 package dto
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type CreateOrder struct {
 	ID        uuid.UUID `json:"id" validate:"required,uuid_rfc4122"`
@@ -10,4 +14,15 @@ type CreateOrder struct {
 	MenuID    uuid.UUID `json:"menu_id" validate:"required,uuid_rfc4122"`
 	Quantity  uint32    `json:"quantity" validate:"required,number,min=1"`
 	Status    string    `json:"status" validate:"required,oneof=UNPAID PAID COOKING COMPLETED"`
+}
+
+type ResponseCreateOrder struct {
+	ID        uuid.UUID `json:"id"`
+	CanteenID uuid.UUID `json:"canteen_id"`
+	UserID    uuid.UUID `json:"user_id"`
+	MenuID    uuid.UUID `json:"menu_id"`
+	Quantity  uint32    `json:"quantity"`
+	Status    string    `json:"status"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
