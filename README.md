@@ -16,6 +16,7 @@ To address this need, we introduce BCC Canteen, a digital platform designed to t
 ## **⭐** Minimum Viable Product (MVP)
 
 As the initial development phase of BCC Canteen, the system must support the following minimum features:
+
 - New users can register an account ✔️
 - Users can log in to the system ✔️
 - Users can edit their profile information ✔️
@@ -139,7 +140,7 @@ You might be overwhelmed by these requirements. Don't worry, here's a list of so
 > 3. PHP
 > 4. Java
 
-You are welcome to use any libraries or frameworks, but we appreciate it if you use the popular ones. 
+You are welcome to use any libraries or frameworks, but we appreciate it if you use the popular ones.
 
 ## **🎒** Tasks
 
@@ -156,9 +157,51 @@ The implementation of this project MUST be in the form of a REST, gRPC, or Graph
 
 > Write how to run your service in a local or development environment here. If you use Docker to serve your DBMS or your server, you will receive bonus points for your submission.
 
+### Deployment with Docker
+
+- Copy and modify the `.env` file
+
+```
+cp .env.example .env; vim .env
+```
+
+- Run MySQL Container
+
+> [IMPORTANT]
+> Change `<your root password>` with your MySQL root password
+
+```sh
+docker run -d --name mysql -v mysql-volume:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=<your root password> -p 3306:3306 --restart=always mysql
+```
+
+Documentation can be found [here](https://hub.docker.com/_/mysql)
+
+- Run Redis Container
+
+Documentation can be found [here](https://hub.docker.com/_/redis)
+
+- Run the Backend Container ([syafa/bcc-canteen](https://hub.docker.com/r/syafa/bcc-canteen)):
+
+```sh
+docker compose up -d
+```
+
+> Check logs with `docker logs atr-backend`
+
+#### Manual Build
+
+A Dockerfile is provided in the root directory of this repository
+
+- Build Docker Image
+
+```sh
+docker build -t syafa/bcc-canteen:latest
+```
+
 ## **📞** Contact
 
 Have any questions? You can contact [Atha](https://www.instagram.com/mhqif/).
+
 ## **🎁** Submission
 
 Please follow the instructions on the [Contributing guide](CONTRIBUTING.md).
@@ -167,4 +210,3 @@ Please follow the instructions on the [Contributing guide](CONTRIBUTING.md).
 > This is not the only way to join us.
 >
 > **But, this is the _one and only way_ to instantly pass.**
-
