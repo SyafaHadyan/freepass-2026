@@ -87,7 +87,9 @@ func (r *CanteenDB) UpdateOrder(order *entity.Order, userID uuid.UUID) error {
 	sub := r.db.Debug().
 		Model(&entity.Canteen{}).
 		Select("id").
-		Where("user_id = ?", userID)
+		Where("user_id = ?", userID).
+		Where("status = ?", "PAID").
+		Or("status = ?", "COOKING")
 
 	res := r.db.Debug().
 		Where("id = ?", order.ID).
