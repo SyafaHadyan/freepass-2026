@@ -10,7 +10,7 @@ func (m *Middleware) Admin(ctx *fiber.Ctx) error {
 	if ctx.Locals("role").(string) != "ADMIN" {
 		return fiber.NewError(
 			http.StatusUnauthorized,
-			"user unaouthorized",
+			"user unauthorized",
 		)
 	}
 
@@ -21,7 +21,7 @@ func (m *Middleware) Canteen(ctx *fiber.Ctx) error {
 	if ctx.Locals("role").(string) != "CANTEEN" {
 		return fiber.NewError(
 			http.StatusUnauthorized,
-			"user unaouthorized",
+			"user unauthorized",
 		)
 	}
 
@@ -35,7 +35,7 @@ func (m *Middleware) AdminOrCanteen(ctx *fiber.Ctx) error {
 	} else {
 		return fiber.NewError(
 			http.StatusUnauthorized,
-			"user unaouthorized",
+			"user unauthorized",
 		)
 	}
 
