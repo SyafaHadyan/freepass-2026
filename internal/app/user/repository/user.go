@@ -11,8 +11,8 @@ type UserDBItf interface {
 	Register(user *entity.User) error
 	RegisterUserDetail(userDetail *entity.UserDetail) error
 	UpdateUserDetail(userDetail *entity.UserDetail) error
-	UpdateUserRole(user *entity.User) error
 	UpdateUserInfo(user *entity.User) error
+	UpdateUserRole(user *entity.User) error
 	Login(user *entity.User) error
 	CheckUsername(user *entity.User) error
 	GetUserIDFromUsername(user *entity.User) error
@@ -91,14 +91,6 @@ func (r *UserDB) GetUsername(user *entity.User, userParam dto.Login) error {
 		Error
 }
 
-func (r *UserDB) GetUserIDFromUsername(user *entity.User) error {
-	return r.db.Debug().
-		Select("id").
-		Where("username = ?", user.Username).
-		First(user).
-		Error
-}
-
 func (r *UserDB) GetUserInfo(user *entity.User) error {
 	return r.db.Debug().
 		Model(&user).
@@ -106,6 +98,14 @@ func (r *UserDB) GetUserInfo(user *entity.User) error {
 		Select("users.id, users.email, users.username, users.name, users.created_at, users.updated_at, user_details.*").
 		Joins("LEFT JOIN user_details ON user_details.user_id = users.id").
 		First(&user).
+		Error
+}
+
+func (r *UserDB) GetUserIDFromUsername(user *entity.User) error {
+	return r.db.Debug().
+		Select("id").
+		Where("username = ?", user.Username).
+		First(user).
 		Error
 }
 

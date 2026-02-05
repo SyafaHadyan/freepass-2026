@@ -14,7 +14,10 @@ func Migrate(db *gorm.DB) {
 		entity.Verification{},
 		entity.PasswordChange{},
 		entity.PasswordResetCode{},
-		entity.UserReporting{},
+		entity.Canteen{},
+		entity.Menu{},
+		entity.Order{},
+		entity.Feedback{},
 	)
 	if err != nil {
 		log.Panic("database migration failed")

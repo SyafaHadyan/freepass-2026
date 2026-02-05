@@ -18,6 +18,8 @@ import (
 
 type UserUseCaseItf interface {
 	Register(register dto.Register) (dto.ResponseRegister, error)
+	UpdateUserInfo(updateUserInfo dto.UpdateUserInfo, userID uuid.UUID) (dto.ResponseUpdateUserInfo, error)
+	UpdateUserRole(updateUserRole dto.UpdateUserRole) (dto.ResponseUpdateUserInfo, error)
 	Login(login dto.Login) (dto.ResponseLogin, string, error)
 	GetUserIDFromUsername(username string) (uuid.UUID, error)
 	GetUserInfo(userID uuid.UUID) (dto.ResponseGetUserInfo, error)
@@ -110,6 +112,7 @@ func (u *UserUseCase) UpdateUserInfo(updateUserInfo dto.UpdateUserInfo, userID u
 
 func (u *UserUseCase) UpdateUserRole(updateUserRole dto.UpdateUserRole) (dto.ResponseUpdateUserInfo, error) {
 	user := entity.User{
+		ID:       updateUserRole.ID,
 		Username: updateUserRole.Username,
 		UserDetail: entity.UserDetail{
 			Role: updateUserRole.Role,
@@ -169,11 +172,24 @@ func (u *UserUseCase) GetUserIDFromUsername(username string) (uuid.UUID, error) 
 		Username: username,
 	}
 
-	err := u.userRepo.GetUserIDFromUsername(&user)
+	key := fmt.Sprintf("user:%s", username)
+
+	result, err := u.redis.Get(key)
+	if err == nil && result != "" {
+		userID, _ := uuid.Parse(result)
+
+		return userID, nil
+	}
+
+	err = u.userRepo.GetUserIDFromUsername(&user)
 	if err != nil {
 		return uuid.Nil,
 			err
 	}
+
+	go func() {
+		u.redis.Set(key, username)
+	}()
 
 	return user.ID, nil
 }
@@ -193,20 +209,6 @@ func (u *UserUseCase) GetUserInfo(userID uuid.UUID) (dto.ResponseGetUserInfo, er
 		if err != nil {
 			log.Println(err)
 		}
-
-		go func() {
-			err = u.userRepo.GetUserInfo(&user)
-			if err != nil {
-				log.Println(err)
-			}
-
-			newData, err := json.Marshal(user)
-			if err != nil {
-				log.Println(err)
-			}
-
-			u.redis.Set(key, string(newData))
-		}()
 
 		return out.ParseToDTOResponseGetUserInfo(), nil
 	}
