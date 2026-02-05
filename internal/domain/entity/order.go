@@ -34,6 +34,19 @@ func (o *Order) ParseToDTOResponseCreateOrder() dto.ResponseCreateOrder {
 	}
 }
 
+func (o *Order) ParseToDTOResponseUpdateOrder() dto.ResponseUpdateOrder {
+	return dto.ResponseUpdateOrder{
+		ID:        o.ID,
+		CanteenID: o.CanteenID,
+		UserID:    o.UserID,
+		MenuID:    o.MenuID,
+		Quantity:  o.Quantity,
+		Status:    o.Status,
+		CreatedAt: o.CreatedAt,
+		UpdatedAt: o.UpdatedAt,
+	}
+}
+
 func (o *Order) ParseToDTOResponseGetOrderInfo() dto.ResponseGetOrderInfo {
 	return dto.ResponseGetOrderInfo{
 		ID:        o.ID,

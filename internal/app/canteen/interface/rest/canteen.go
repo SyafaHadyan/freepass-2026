@@ -39,6 +39,7 @@ func NewCanteenHandler(
 	routerGroup.Post("/menu", middleware.Authentication, middleware.Canteen, canteenHandler.CreateMenu)
 	routerGroup.Post("/menu/order", middleware.Authentication, canteenHandler.CreateOrder)
 	routerGroup.Patch("/menu/:id", middleware.Authentication, middleware.Canteen, canteenHandler.UpdateMenu)
+	routerGroup.Patch("/menu/order", middleware.Authentication, middleware.Canteen, canteenHandler.UpdateOrder)
 	routerGroup.Get("", middleware.Authentication, canteenHandler.GetCanteenList)
 	routerGroup.Get("/:id", middleware.Authentication, canteenHandler.GetCanteenInfo)
 	routerGroup.Get("/menu/:id", middleware.Authentication, canteenHandler.GetMenuInfo)
@@ -211,6 +212,52 @@ func (c *CanteenHandler) UpdateMenu(ctx *fiber.Ctx) error {
 
 	return ctx.Status(http.StatusOK).JSON(fiber.Map{
 		"message": "menu updated",
+		"payload": res,
+	})
+}
+
+func (c *CanteenHandler) UpdateOrder(ctx *fiber.Ctx) error {
+	var updateOrder dto.UpdateOrder
+
+	userID, err := uuid.Parse(ctx.Locals("userID").(string))
+	if err != nil {
+		return fiber.NewError(
+			http.StatusBadRequest,
+			"invalid user id",
+		)
+	}
+
+	err = ctx.BodyParser(&updateOrder)
+	if err != nil {
+		return fiber.NewError(
+			http.StatusBadRequest,
+			"failed to parse request body",
+		)
+	}
+
+	err = c.Validator.Struct(updateOrder)
+	if err != nil {
+		return fiber.NewError(
+			http.StatusBadRequest,
+			"invalid request body",
+		)
+	}
+
+	res, err := c.CanteenUseCase.UpdateOrder(updateOrder, userID)
+	if err == gorm.ErrRecordNotFound {
+		return fiber.NewError(
+			http.StatusNotFound,
+			"order not found",
+		)
+	} else if err != nil {
+		return fiber.NewError(
+			http.StatusInternalServerError,
+			"failed to delete order",
+		)
+	}
+
+	return ctx.Status(http.StatusOK).JSON(fiber.Map{
+		"message": "order updated",
 		"payload": res,
 	})
 }

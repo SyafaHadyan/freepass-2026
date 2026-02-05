@@ -12,6 +12,7 @@ type CanteenDBItf interface {
 	CreateMenu(menu *entity.Menu) error
 	CreateOrder(menu *entity.Menu, order *entity.Order) error
 	UpdateMenu(menu *entity.Menu, userID uuid.UUID) error
+	UpdateOrder(order *entity.Order, userID uuid.UUID) error
 	GetCanteenInfo(canteen *entity.Canteen) error
 	GetCanteenList(canteen *[]entity.Canteen) error
 	GetMenuInfo(menu *entity.Menu) error
@@ -74,6 +75,24 @@ func (r *CanteenDB) UpdateMenu(menu *entity.Menu, userID uuid.UUID) error {
 		Where("id = ?", menu.ID).
 		Where("canteen_id IN (?)", sub).
 		Updates(menu)
+
+	if res.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+
+	return res.Error
+}
+
+func (r *CanteenDB) UpdateOrder(order *entity.Order, userID uuid.UUID) error {
+	sub := r.db.Debug().
+		Model(&entity.Canteen{}).
+		Select("id").
+		Where("user_id = ?", userID)
+
+	res := r.db.Debug().
+		Where("id = ?", order.ID).
+		Where("canteen_id IN (?)", sub).
+		Update("status = ?", order.Status)
 
 	if res.RowsAffected == 0 {
 		return gorm.ErrRecordNotFound
