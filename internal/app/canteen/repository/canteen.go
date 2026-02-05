@@ -16,6 +16,7 @@ type CanteenDBItf interface {
 	GetCanteenList(canteen *[]entity.Canteen) error
 	GetMenuInfo(menu *entity.Menu) error
 	GetOrderInfo(order *entity.Order) error
+	GetOrderList(order *[]entity.Order, userID uuid.UUID) error
 	SoftDeleteMenu(menu *entity.Menu, userID uuid.UUID) error
 }
 
@@ -107,6 +108,25 @@ func (r *CanteenDB) GetOrderInfo(order *entity.Order) error {
 		Select("id, canteen_id, user_id, menu_id, quantity, status, created_at, updated_at").
 		Where("user_id = ?", order.UserID).
 		Error
+}
+
+func (r *CanteenDB) GetOrderList(order *[]entity.Order, userID uuid.UUID) error {
+	sub := r.db.Debug().
+		Model(&entity.Canteen{}).
+		Select("id").
+		Where("user_id = ?", userID)
+
+	res := r.db.Debug().
+		Model(&entity.Order{}).
+		Select("id, canteen_id, user_id, menu_id, quantity, status, created_at, updated_at").
+		Where("canteen_id IN (?)", sub).
+		Find(order)
+
+	if res.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+
+	return res.Error
 }
 
 func (r *CanteenDB) SoftDeleteMenu(menu *entity.Menu, userID uuid.UUID) error {

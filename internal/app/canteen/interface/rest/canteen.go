@@ -319,6 +319,29 @@ func (c *CanteenHandler) GetOrderInfo(ctx *fiber.Ctx) error {
 	})
 }
 
+func (c *CanteenHandler) GetOrderList(ctx *fiber.Ctx) error {
+	userID, err := uuid.Parse(ctx.Locals("userID").(string))
+	if err != nil {
+		return fiber.NewError(
+			http.StatusBadRequest,
+			"invalid user id",
+		)
+	}
+
+	res, err := c.CanteenUseCase.GetOrderList(userID)
+	if err == gorm.ErrRecordNotFound {
+		return fiber.NewError(
+			http.StatusNotFound,
+			"order list empty",
+		)
+	}
+
+	return ctx.Status(http.StatusOK).JSON(fiber.Map{
+		"message": "successfully retrieved order list",
+		"payload": res,
+	})
+}
+
 func (c *CanteenHandler) SoftDeleteMenu(ctx *fiber.Ctx) error {
 	userID, err := uuid.Parse(ctx.Locals("userID").(string))
 	if err != nil {
