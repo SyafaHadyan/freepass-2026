@@ -14,6 +14,7 @@ type Menu struct {
 	CanteenID uuid.UUID      `json:"canteen_id" gorm:"type:char(36)"`
 	Name      string         `json:"name" gorm:"type:varchar(128)"`
 	Price     uint32         `json:"price" gorm:"type:uint32"`
+	Stock     uint32         `json:"stock" gorm:"type:uint32"`
 	CreatedAt time.Time      `json:"created_at" gorm:"type:timestamp;autoCreateTime"`
 	UpdatedAt time.Time      `json:"updated_at" gorm:"type:timestamp;autoUpdateTime"`
 	DeletedAt gorm.DeletedAt `gorm:"index"`
@@ -25,6 +26,7 @@ func (m *Menu) ParseToDTOResponseCreateMenu() dto.ResponseCreateMenu {
 		CanteenID: m.CanteenID,
 		Name:      m.Name,
 		Price:     m.Price,
+		Stock:     m.Stock,
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,
 	}
@@ -36,6 +38,7 @@ func (m *Menu) ParseToDTOResponseUpdateMenu() dto.ResponseUpdateMenu {
 		CanteenID: m.CanteenID,
 		Name:      m.Name,
 		Price:     m.Price,
+		Stock:     m.Stock,
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,
 	}
@@ -47,6 +50,7 @@ func (m *Menu) ParseToDTOResponseGetMenuInfo() dto.ResponseGetMenuInfo {
 		CanteenID: m.CanteenID,
 		Name:      m.Name,
 		Price:     m.Price,
+		Stock:     m.Stock,
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,
 	}

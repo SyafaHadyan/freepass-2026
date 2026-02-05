@@ -33,6 +33,8 @@ func (r *CanteenDB) CreateCanteen(canteen *entity.Canteen) error {
 		Error
 }
 
+// TODO: validate canteen ownership
+
 func (r *CanteenDB) CreateMenu(menu *entity.Menu) error {
 	return r.db.Debug().
 		Create(menu).
