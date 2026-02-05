@@ -14,6 +14,7 @@ import (
 type CanteenUseCaseItf interface {
 	CreateCanteen(createCanteen dto.CreateCanteen) (dto.ResponseCreateCanteen, error)
 	CreateMenu(createMenu dto.CreateMenu) (dto.ResponseCreateMenu, error)
+	CreateOrder(createOrder dto.CreateOrder) (dto.ResponseCreateOrder, error)
 	UpdateMenu(updateMenu dto.UpdateMenu) (dto.ResponseUpdateMenu, error)
 	GetCanteenList() ([]dto.ResponseGetCanteenList, error)
 	GetCanteenInfo(canteenID uuid.UUID) (dto.ResponseGetCanteenInfo, error)
@@ -60,6 +61,24 @@ func (c *CanteenUseCase) CreateMenu(createMenu dto.CreateMenu) (dto.ResponseCrea
 	err := c.canteenRepo.CreateMenu(&menu)
 
 	return menu.ParseToDTOResponseCreateMenu(), err
+}
+
+func (c *CanteenUseCase) CreateOrder(createOrder dto.CreateOrder) (dto.ResponseCreateOrder, error) {
+	menu := entity.Menu{
+		ID: createOrder.MenuID,
+	}
+
+	order := entity.Order{
+		ID:       uuid.New(),
+		UserID:   createOrder.UserID,
+		MenuID:   createOrder.MenuID,
+		Quantity: createOrder.Quantity,
+		Status:   "UNPAID",
+	}
+
+	err := c.canteenRepo.CreateOrder(&menu, &order)
+
+	return order.ParseToDTOResponseCreateOrder(), err
 }
 
 func (c *CanteenUseCase) UpdateMenu(updateMenu dto.UpdateMenu) (dto.ResponseUpdateMenu, error) {

@@ -10,6 +10,7 @@ import (
 type CanteenDBItf interface {
 	CreateCanteen(canteen *entity.Canteen) error
 	CreateMenu(menu *entity.Menu) error
+	CreateOrder(menu *entity.Menu, order *entity.Order) error
 	UpdateMenu(menu *entity.Menu, userID uuid.UUID) error
 	GetCanteenInfo(canteen *entity.Canteen) error
 	GetCanteenList(canteen *[]entity.Canteen) error
@@ -38,6 +39,26 @@ func (r *CanteenDB) CreateCanteen(canteen *entity.Canteen) error {
 func (r *CanteenDB) CreateMenu(menu *entity.Menu) error {
 	return r.db.Debug().
 		Create(menu).
+		Error
+}
+
+func (r *CanteenDB) CreateOrder(menu *entity.Menu, order *entity.Order) error {
+	sub := r.db.Debug().
+		Model(&menu).
+		Select("id, canteen_id").
+		Where("stock >= ?", order.Quantity)
+	if sub == nil {
+		return gorm.ErrInvalidValue
+	}
+
+	order.CanteenID = menu.CanteenID
+
+	r.db.Debug().
+		Create(order)
+
+	return r.db.Debug().
+		Model(&menu).
+		Update("stock = ?", menu.Stock-order.Quantity).
 		Error
 }
 
