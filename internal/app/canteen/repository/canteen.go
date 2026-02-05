@@ -15,6 +15,7 @@ type CanteenDBItf interface {
 	GetCanteenInfo(canteen *entity.Canteen) error
 	GetCanteenList(canteen *[]entity.Canteen) error
 	GetMenuInfo(menu *entity.Menu) error
+	GetOrderInfo(order *entity.Order) error
 	SoftDeleteMenu(menu *entity.Menu, userID uuid.UUID) error
 }
 
@@ -98,6 +99,13 @@ func (r *CanteenDB) GetMenuInfo(menu *entity.Menu) error {
 	return r.db.Debug().
 		Select("id, canteen_id, name, price, created_at, updated_at").
 		First(&menu).
+		Error
+}
+
+func (r *CanteenDB) GetOrderInfo(order *entity.Order) error {
+	return r.db.Debug().
+		Select("id, canteen_id, user_id, menu_id, quantity, status, created_at, updated_at").
+		Where("user_id = ?", order.UserID).
 		Error
 }
 

@@ -26,3 +26,25 @@ type ResponseCreateOrder struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+type GetOrderInfo struct {
+	ID        uuid.UUID `json:"id"`
+	CanteenID uuid.UUID `json:"canteen_id"`
+	UserID    uuid.UUID `json:"user_id"`
+	MenuID    uuid.UUID `json:"menu_id"`
+	Quantity  uint32    `json:"quantity"`
+	Status    string    `json:"status"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type ResponseGetOrderInfo struct {
+	ID        uuid.UUID `json:"id"`
+	CanteenID uuid.UUID `json:"canteen_id"`
+	UserID    uuid.UUID `json:"user_id"`
+	MenuID    uuid.UUID `json:"menu_id"`
+	Quantity  uint32    `json:"quantity"`
+	Status    string    `json:"status"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}

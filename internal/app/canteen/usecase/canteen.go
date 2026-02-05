@@ -19,6 +19,7 @@ type CanteenUseCaseItf interface {
 	GetCanteenList() ([]dto.ResponseGetCanteenList, error)
 	GetCanteenInfo(canteenID uuid.UUID) (dto.ResponseGetCanteenInfo, error)
 	GetMenuInfo(menuID uuid.UUID) (dto.ResponseGetMenuInfo, error)
+	GetOrderInfo(getOrderInfo dto.GetOrderInfo) (dto.ResponseGetOrderInfo, error)
 	SoftDeleteMenu(menuID uuid.UUID, userID uuid.UUID) error
 }
 
@@ -128,6 +129,17 @@ func (c *CanteenUseCase) GetMenuInfo(menuID uuid.UUID) (dto.ResponseGetMenuInfo,
 	err := c.canteenRepo.GetMenuInfo(&menu)
 
 	return menu.ParseToDTOResponseGetMenuInfo(), err
+}
+
+func (c *CanteenUseCase) GetOrderInfo(getOrderInfo dto.GetOrderInfo) (dto.ResponseGetOrderInfo, error) {
+	order := entity.Order{
+		ID:     getOrderInfo.ID,
+		UserID: getOrderInfo.UserID,
+	}
+
+	err := c.canteenRepo.GetOrderInfo(&order)
+
+	return order.ParseToDTOResponseGetOrderInfo(), err
 }
 
 func (c *CanteenUseCase) SoftDeleteMenu(menuID uuid.UUID, userID uuid.UUID) error {

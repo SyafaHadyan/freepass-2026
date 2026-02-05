@@ -42,6 +42,7 @@ func NewCanteenHandler(
 	routerGroup.Get("", middleware.Authentication, canteenHandler.GetCanteenList)
 	routerGroup.Get("/:id", middleware.Authentication, canteenHandler.GetCanteenInfo)
 	routerGroup.Get("/menu/:id", middleware.Authentication, canteenHandler.GetMenuInfo)
+	routerGroup.Get("/menu/order", middleware.Authentication, canteenHandler.GetOrderInfo)
 	routerGroup.Delete("/menu/:id", middleware.Authentication, middleware.Canteen, canteenHandler.SoftDeleteMenu)
 }
 
@@ -271,6 +272,49 @@ func (c *CanteenHandler) GetMenuInfo(ctx *fiber.Ctx) error {
 
 	return ctx.Status(http.StatusOK).JSON(fiber.Map{
 		"message": "successfully get menu info",
+		"payload": res,
+	})
+}
+
+func (c *CanteenHandler) GetOrderInfo(ctx *fiber.Ctx) error {
+	var getOrderInfo dto.GetOrderInfo
+
+	userID, err := uuid.Parse(ctx.Locals("userID").(string))
+	if err != nil {
+		return fiber.NewError(
+			http.StatusBadRequest,
+			"invalid user id",
+		)
+	}
+
+	err = ctx.BodyParser(&getOrderInfo)
+	if err != nil {
+		return fiber.NewError(
+			http.StatusBadRequest,
+			"failed to parse request body",
+		)
+	}
+
+	getOrderInfo.UserID = userID
+
+	err = c.Validator.Struct(getOrderInfo)
+	if err != nil {
+		return fiber.NewError(
+			http.StatusBadRequest,
+			"invalid request body",
+		)
+	}
+
+	res, err := c.CanteenUseCase.GetOrderInfo(getOrderInfo)
+	if err != nil {
+		return fiber.NewError(
+			http.StatusInternalServerError,
+			"failed to get order info",
+		)
+	}
+
+	return ctx.Status(http.StatusOK).JSON(fiber.Map{
+		"message": "successfully retrieved order info",
 		"payload": res,
 	})
 }
