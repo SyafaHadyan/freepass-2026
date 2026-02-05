@@ -20,7 +20,7 @@ func (m *Middleware) Authentication(ctx *fiber.Ctx) error {
 	bearerToken := authToken[0]
 	token := strings.Split(bearerToken, " ")
 
-	userID, err := m.jwt.ValidateToken(token[1])
+	userID, role, err := m.jwt.ValidateToken(token[1])
 	if err != nil {
 		return fiber.NewError(
 			http.StatusUnauthorized,
@@ -29,6 +29,7 @@ func (m *Middleware) Authentication(ctx *fiber.Ctx) error {
 	}
 
 	ctx.Locals("userID", userID.String())
+	ctx.Locals("role", role)
 
 	return ctx.Next()
 }

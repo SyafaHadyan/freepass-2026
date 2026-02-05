@@ -11,7 +11,7 @@ import (
 
 type JWTItf interface {
 	GenerateToken(userID uuid.UUID, role string) (string, error)
-	ValidateToken(tokenString string) (uuid.UUID, error)
+	ValidateToken(tokenString string) (uuid.UUID, string, error)
 }
 
 type JWT struct {
@@ -53,21 +53,22 @@ func (j *JWT) GenerateToken(userID uuid.UUID, role string) (string, error) {
 	return tokenStirng, nil
 }
 
-func (j *JWT) ValidateToken(tokenString string) (uuid.UUID, error) {
+func (j *JWT) ValidateToken(tokenString string) (uuid.UUID, string, error) {
 	var claims Claims
 
 	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (any, error) {
 		return []byte(j.secretKey), nil
 	})
 	if err != nil {
-		return uuid.Nil, err
+		return uuid.Nil, "", err
 	}
 
 	if !token.Valid {
-		return uuid.Nil, err
+		return uuid.Nil, "", err
 	}
 
 	userID := claims.ID
+	role := claims.Role
 
-	return userID, nil
+	return userID, role, nil
 }

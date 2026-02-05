@@ -29,37 +29,8 @@ type UserDetail struct {
 	Role   string    `json:"role"`
 }
 
-type AddFriend struct {
-	UserID   uuid.UUID `json:"user_id"`
-	FriendID uuid.UUID `json:"friend_id" validate:"required,uuid_rfc4122"`
-}
-
 type CheckUserID struct {
 	ID uuid.UUID `json:"id" validate:"required,uuid_rfc4122"`
-}
-
-type CheckFriendRequestExist struct {
-	UserID   uuid.UUID `json:"user_id"`
-	FriendID uuid.UUID `json:"friend_id"`
-}
-
-type AcceptFriendRequest struct {
-	UserID   uuid.UUID `json:"user_id"`
-	FriendID uuid.UUID `json:"friend_id"`
-	Username string    `json:"username" validate:"required,min=3,max=32"`
-}
-
-type SendFriendRequest struct {
-	ID       uuid.UUID `json:"id"`
-	UserID   uuid.UUID `json:"user_id"`
-	FriendID uuid.UUID `json:"friend_id"`
-	Username string    `json:"username" validate:"required,min=3,max=32"`
-	Accepted bool      `json:"accepted"`
-}
-
-type GetFriendRequest struct {
-	UserID   uuid.UUID `json:"user_id"`
-	FriendID uuid.UUID `json:"friend_id"`
 }
 
 type GetUserID struct {
@@ -78,8 +49,9 @@ type UpdateUserInfo struct {
 }
 
 type UpdateUserRole struct {
-	Username string `json:"username" validate:"required,min=3,max=32"`
-	Role     string `json:"role" validate:"required,oneof= USER CANTEEN ADMIN"`
+	ID       uuid.UUID `json:"id" validate:"uuid_rfc4122"`
+	Username string    `json:"username" validate:"required,min=3,max=32"`
+	Role     string    `json:"role" validate:"required,oneof=USER CANTEEN ADMIN"`
 }
 
 type EmailVerification struct {
@@ -121,13 +93,6 @@ type ChangePassword struct {
 	Password string `json:"password" validate:"required,min=4"`
 }
 
-type ReportUser struct {
-	ID         uuid.UUID `json:"id"`
-	UserID     uuid.UUID `json:"user_id"`
-	Username   string    `json:"username" validate:"required,min=4,max=20"`
-	ReporterID uuid.UUID `json:"reporter_id"`
-}
-
 type ResponseRegister struct {
 	ID         uuid.UUID `json:"id"`
 	Email      string    `json:"email"`
@@ -135,7 +100,9 @@ type ResponseRegister struct {
 	Name       string    `json:"name"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
-	UserDetail struct{}  `json:"user_detail"`
+	UserDetail struct {
+		Role string `json:"role"`
+	} `json:"user_detail"`
 }
 
 type ResponseLogin struct {

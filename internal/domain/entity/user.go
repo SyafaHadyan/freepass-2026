@@ -21,7 +21,6 @@ type User struct {
 	UserDetail        UserDetail
 	PasswordChange    []PasswordChange
 	PasswordResetCode []PasswordResetCode
-	UserReporting     []UserReporting
 }
 
 type UserDetail struct {
@@ -52,13 +51,6 @@ type PasswordResetCode struct {
 	Code             uint           `json:"code" gorm:"type:varchar(8)"`
 	CreatedAt        time.Time      `json:"created_at" gorm:"type:timestamp;autoCreateTime"`
 	DeletedAt        gorm.DeletedAt `gorm:"index"`
-}
-
-type UserReporting struct {
-	ID         uuid.UUID `json:"id" gorm:"type:char(36);primaryKey"`
-	UserID     uuid.UUID `json:"user_id" gorm:"type:char(36)"`
-	ReporterID uuid.UUID `json:"reporter_id" gorm:"type:char(36)"`
-	CreatedAt  time.Time `json:"created_at" gorm:"type:timestamp;autoCreateTime"`
 }
 
 func (u *User) ParseToDTOResponseRegister() dto.ResponseRegister {

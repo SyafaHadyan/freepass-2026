@@ -2,40 +2,42 @@ package middleware
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 func (m *Middleware) Admin(ctx *fiber.Ctx) error {
-	authToken := ctx.GetReqHeaders()["Authorization"]
-
-	if len(authToken) < 1 {
-		return fiber.NewError(
-			http.StatusUnauthorized,
-			"user unaouthorized",
-		)
-	}
-
 	if ctx.Locals("role").(string) != "ADMIN" {
 		return fiber.NewError(
 			http.StatusUnauthorized,
-			"user unaouthorized",
+			"user unauthorized",
 		)
 	}
 
-	bearerToken := authToken[0]
-	token := strings.Split(bearerToken, " ")
+	return ctx.Next()
+}
 
-	userID, err := m.jwt.ValidateToken(token[1])
-	if err != nil {
+func (m *Middleware) Canteen(ctx *fiber.Ctx) error {
+	if ctx.Locals("role").(string) != "CANTEEN" {
 		return fiber.NewError(
 			http.StatusUnauthorized,
-			"token invalid",
+			"user unauthorized",
 		)
 	}
 
-	ctx.Locals("userID", userID.String())
+	return ctx.Next()
+}
+
+func (m *Middleware) AdminOrCanteen(ctx *fiber.Ctx) error {
+	role := ctx.Locals("role").(string)
+
+	if role == "CANTEEN" || role == "ADMIN" {
+	} else {
+		return fiber.NewError(
+			http.StatusUnauthorized,
+			"user unauthorized",
+		)
+	}
 
 	return ctx.Next()
 }

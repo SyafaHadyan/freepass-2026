@@ -8,6 +8,9 @@ import (
 
 type MiddlewareItf interface {
 	Authentication(ctx *fiber.Ctx) error
+	Admin(ctx *fiber.Ctx) error
+	Canteen(ctx *fiber.Ctx) error
+	AdminOrCanteen(ctx *fiber.Ctx) error
 }
 
 type Middleware struct {
