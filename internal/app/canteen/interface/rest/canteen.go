@@ -38,6 +38,7 @@ func NewCanteenHandler(
 	routerGroup.Post("", middleware.Authentication, middleware.Canteen, canteenHandler.CreateCanteen)
 	routerGroup.Post("/menu", middleware.Authentication, middleware.Canteen, canteenHandler.CreateMenu)
 	routerGroup.Post("/menu/order", middleware.Authentication, canteenHandler.CreateOrder)
+	routerGroup.Post("/menu/order/feedback", middleware.Authentication, canteenHandler.CreateFeedback)
 	routerGroup.Patch("/menu/:id", middleware.Authentication, middleware.Canteen, canteenHandler.UpdateMenu)
 	routerGroup.Patch("/menu/order", middleware.Authentication, middleware.Canteen, canteenHandler.UpdateOrder)
 	routerGroup.Get("", middleware.Authentication, canteenHandler.GetCanteenList)
@@ -132,6 +133,7 @@ func (c *CanteenHandler) CreateOrder(ctx *fiber.Ctx) error {
 	}
 
 	createOrder.UserID = userID
+
 	err = c.Validator.Struct(createOrder)
 	if err != nil {
 		return fiber.NewError(
@@ -155,6 +157,54 @@ func (c *CanteenHandler) CreateOrder(ctx *fiber.Ctx) error {
 
 	return ctx.Status(http.StatusCreated).JSON(fiber.Map{
 		"message": "order created",
+		"payload": res,
+	})
+}
+
+func (c *CanteenHandler) CreateFeedback(ctx *fiber.Ctx) error {
+	var createFeedback dto.CreateFeedback
+
+	userID, err := uuid.Parse(ctx.Locals("userID").(string))
+	if err != nil {
+		return fiber.NewError(
+			http.StatusUnauthorized,
+			"user unauthorized",
+		)
+	}
+
+	err = ctx.BodyParser(&createFeedback)
+	if err != nil {
+		return fiber.NewError(
+			http.StatusBadRequest,
+			"failed to parse request body",
+		)
+	}
+
+	createFeedback.UserID = userID
+
+	err = c.Validator.Struct(createFeedback)
+	if err != nil {
+		return fiber.NewError(
+			http.StatusBadRequest,
+			"invalid request body",
+		)
+	}
+
+	res, err := c.CanteenUseCase.CreateFeedback(createFeedback)
+	if err == gorm.ErrRecordNotFound {
+		return fiber.NewError(
+			http.StatusNotFound,
+			"order not found",
+		)
+	} else if err != nil {
+		return fiber.NewError(
+			http.StatusInternalServerError,
+			"failed to create feedback",
+		)
+	}
+
+	return ctx.Status(http.StatusCreated).JSON(fiber.Map{
+		"message": "feedback created",
 		"payload": res,
 	})
 }

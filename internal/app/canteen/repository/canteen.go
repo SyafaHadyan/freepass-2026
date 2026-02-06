@@ -11,6 +11,7 @@ type CanteenDBItf interface {
 	CreateCanteen(canteen *entity.Canteen) error
 	CreateMenu(menu *entity.Menu) error
 	CreateOrder(menu *entity.Menu, order *entity.Order) error
+	CreateFeedback(feedback *entity.Feedback) error
 	UpdateMenu(menu *entity.Menu, userID uuid.UUID) error
 	UpdateOrder(order *entity.Order, userID uuid.UUID) error
 	GetCanteenInfo(canteen *entity.Canteen) error
@@ -62,6 +63,23 @@ func (r *CanteenDB) CreateOrder(menu *entity.Menu, order *entity.Order) error {
 	return r.db.Debug().
 		Model(&menu).
 		Update("stock = ?", menu.Stock-order.Quantity).
+		Error
+}
+
+func (r *CanteenDB) CreateFeedback(feedback *entity.Feedback) error {
+	res := r.db.Debug().
+		Model(&entity.Order{}).
+		Where("id = ?", feedback.OrderID).
+		Where("user_id = ?", feedback.UserID).
+		Where("status = ?", "COMPLETED").
+		Update("status", "FEEDBACKSENT")
+
+	if res.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+
+	return r.db.Debug().
+		Create(feedback).
 		Error
 }
 
