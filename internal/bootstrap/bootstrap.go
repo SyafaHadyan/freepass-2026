@@ -12,9 +12,7 @@ import (
 	"github.com/SyafaHadyan/freepass-2026/internal/infra/env"
 	fiberapp "github.com/SyafaHadyan/freepass-2026/internal/infra/fiber"
 	"github.com/SyafaHadyan/freepass-2026/internal/infra/jwt"
-	"github.com/SyafaHadyan/freepass-2026/internal/infra/mailer"
 	"github.com/SyafaHadyan/freepass-2026/internal/infra/redis"
-	"github.com/SyafaHadyan/freepass-2026/internal/infra/s3"
 	"github.com/SyafaHadyan/freepass-2026/internal/middleware"
 	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
@@ -27,8 +25,6 @@ type Bootstrap struct {
 	Database  *gorm.DB
 	Redis     *redis.Redis
 	JWT       *jwt.JWT
-	Mailer    *mailer.Mailer
-	S3        *s3.S3
 }
 
 func Start() *Bootstrap {
@@ -45,10 +41,6 @@ func Start() *Bootstrap {
 
 	jwt := jwt.New(config)
 
-	mailer := mailer.New(config)
-
-	s3 := s3.New(config)
-
 	app := fiberapp.New(config)
 
 	middleware := middleware.NewMiddleware(*jwt)
@@ -57,7 +49,7 @@ func Start() *Bootstrap {
 
 	userUseCase := userusecase.NewUserUseCase(userRepository, jwt, redis)
 
-	userhandler.NewUserHandler(app.Router, validator, middleware, userUseCase, config, mailer)
+	userhandler.NewUserHandler(app.Router, validator, middleware, userUseCase, config)
 
 	Bootstrap := Bootstrap{
 		App:       app,
@@ -66,8 +58,6 @@ func Start() *Bootstrap {
 		Database:  database,
 		Redis:     redis,
 		JWT:       jwt,
-		Mailer:    mailer,
-		S3:        s3,
 	}
 
 	log.Printf("startup time: %v", time.Since(startTime))
