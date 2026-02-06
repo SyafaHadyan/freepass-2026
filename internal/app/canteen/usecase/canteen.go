@@ -135,9 +135,10 @@ func (c *CanteenUseCase) CreatePayment(createPayment dto.CreatePayment) (dto.Res
 
 func (c *CanteenUseCase) VerifyPayment(verifyPayment dto.VerifyPayment) error {
 	orderID, _ := uuid.Parse(verifyPayment.TransactionID)
+	transactionStatus := verifyPayment.TransactionStatus
 
 	signatureKey := fmt.Sprintf(
-		"%s,%s,%s,%s,",
+		"%s%s%s%s",
 		verifyPayment.TransactionID,
 		verifyPayment.StatusCode,
 		verifyPayment.GrossAmount,
@@ -150,6 +151,13 @@ func (c *CanteenUseCase) VerifyPayment(verifyPayment dto.VerifyPayment) error {
 	hexHash := hex.EncodeToString(hashedData)
 
 	if hexHash != verifyPayment.SignatureKey {
+		return fiber.NewError(
+			http.StatusUnauthorized,
+			"payment could not be verified")
+	}
+
+	if transactionStatus == "capture" || transactionStatus == "settlement" {
+	} else {
 		return fiber.NewError(
 			http.StatusUnauthorized,
 			"payment could not be verified")
