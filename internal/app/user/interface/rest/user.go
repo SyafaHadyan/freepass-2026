@@ -7,7 +7,6 @@ import (
 	"github.com/SyafaHadyan/freepass-2026/internal/app/user/usecase"
 	"github.com/SyafaHadyan/freepass-2026/internal/domain/dto"
 	"github.com/SyafaHadyan/freepass-2026/internal/infra/env"
-	"github.com/SyafaHadyan/freepass-2026/internal/infra/mailer"
 	"github.com/SyafaHadyan/freepass-2026/internal/middleware"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -19,20 +18,18 @@ type UserHandler struct {
 	Middleware  middleware.MiddlewareItf
 	UserUseCase usecase.UserUseCaseItf
 	Config      *env.Env
-	Mailer      mailer.MailerItf
 }
 
 func NewUserHandler(
 	routerGroup fiber.Router, validator *validator.Validate,
 	middleware middleware.MiddlewareItf, userUseCase usecase.UserUseCaseItf,
-	config *env.Env, mailer mailer.MailerItf,
+	config *env.Env,
 ) {
 	userHandler := UserHandler{
 		Validator:   validator,
 		Middleware:  middleware,
 		UserUseCase: userUseCase,
 		Config:      config,
-		Mailer:      mailer,
 	}
 
 	routerGroup = routerGroup.Group("/users")
@@ -40,7 +37,7 @@ func NewUserHandler(
 	routerGroup.Post("/register", userHandler.Register)
 	routerGroup.Post("/login", userHandler.Login)
 	routerGroup.Get("/info", middleware.Authentication, userHandler.GetUserInfo)
-	routerGroup.Patch("/info", middleware.Authentication, userHandler.UpdateUserInfo)
+	routerGroup.Patch("/info/:username", middleware.Authentication, userHandler.UpdateUserInfo)
 	routerGroup.Patch("/role", middleware.Authentication, middleware.Admin, userHandler.UpdateUserRole)
 	routerGroup.Delete("/:username", middleware.Authentication, middleware.Admin, userHandler.SoftDelete)
 }

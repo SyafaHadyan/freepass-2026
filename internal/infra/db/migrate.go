@@ -11,12 +11,10 @@ func Migrate(db *gorm.DB) {
 	err := db.AutoMigrate(
 		entity.User{},
 		entity.UserDetail{},
-		entity.Verification{},
-		entity.PasswordChange{},
-		entity.PasswordResetCode{},
 		entity.Canteen{},
 		entity.Menu{},
 		entity.Order{},
+		entity.Payment{},
 		entity.Feedback{},
 	)
 	if err != nil {

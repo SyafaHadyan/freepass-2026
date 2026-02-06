@@ -5,6 +5,9 @@ import (
 	"log"
 	"time"
 
+	canteenhandler "github.com/SyafaHadyan/freepass-2026/internal/app/canteen/interface/rest"
+	canteenrepository "github.com/SyafaHadyan/freepass-2026/internal/app/canteen/repository"
+	canteenusecase "github.com/SyafaHadyan/freepass-2026/internal/app/canteen/usecase"
 	userhandler "github.com/SyafaHadyan/freepass-2026/internal/app/user/interface/rest"
 	userrepository "github.com/SyafaHadyan/freepass-2026/internal/app/user/repository"
 	userusecase "github.com/SyafaHadyan/freepass-2026/internal/app/user/usecase"
@@ -12,9 +15,8 @@ import (
 	"github.com/SyafaHadyan/freepass-2026/internal/infra/env"
 	fiberapp "github.com/SyafaHadyan/freepass-2026/internal/infra/fiber"
 	"github.com/SyafaHadyan/freepass-2026/internal/infra/jwt"
-	"github.com/SyafaHadyan/freepass-2026/internal/infra/mailer"
+	"github.com/SyafaHadyan/freepass-2026/internal/infra/payment"
 	"github.com/SyafaHadyan/freepass-2026/internal/infra/redis"
-	"github.com/SyafaHadyan/freepass-2026/internal/infra/s3"
 	"github.com/SyafaHadyan/freepass-2026/internal/middleware"
 	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
@@ -27,8 +29,6 @@ type Bootstrap struct {
 	Database  *gorm.DB
 	Redis     *redis.Redis
 	JWT       *jwt.JWT
-	Mailer    *mailer.Mailer
-	S3        *s3.S3
 }
 
 func Start() *Bootstrap {
@@ -45,19 +45,20 @@ func Start() *Bootstrap {
 
 	jwt := jwt.New(config)
 
-	mailer := mailer.New(config)
-
-	s3 := s3.New(config)
+	payment := payment.New(config)
 
 	app := fiberapp.New(config)
 
 	middleware := middleware.NewMiddleware(*jwt)
 
 	userRepository := userrepository.NewUserDB(database)
+	canteenRepository := canteenrepository.NewCanteenDB(database)
 
 	userUseCase := userusecase.NewUserUseCase(userRepository, jwt, redis)
+	canteenUseCase := canteenusecase.NewCanteenUseCase(canteenRepository, payment, config, redis)
 
-	userhandler.NewUserHandler(app.Router, validator, middleware, userUseCase, config, mailer)
+	userhandler.NewUserHandler(app.Router, validator, middleware, userUseCase, config)
+	canteenhandler.NewCanteenHandler(app.Router, validator, middleware, canteenUseCase, config)
 
 	Bootstrap := Bootstrap{
 		App:       app,
@@ -66,8 +67,6 @@ func Start() *Bootstrap {
 		Database:  database,
 		Redis:     redis,
 		JWT:       jwt,
-		Mailer:    mailer,
-		S3:        s3,
 	}
 
 	log.Printf("startup time: %v", time.Since(startTime))
