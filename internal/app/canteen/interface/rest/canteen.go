@@ -39,6 +39,7 @@ func NewCanteenHandler(
 	routerGroup.Post("/menu", middleware.Authentication, middleware.Canteen, canteenHandler.CreateMenu)
 	routerGroup.Post("/menu/order", middleware.Authentication, canteenHandler.CreateOrder)
 	routerGroup.Post("/payment", middleware.Authentication, canteenHandler.CreatePayment)
+	routerGroup.Post("/payment/verification", canteenHandler.VerifyPayment)
 	routerGroup.Post("/menu/order/feedback", middleware.Authentication, canteenHandler.CreateFeedback)
 	routerGroup.Patch("/menu/:id", middleware.Authentication, middleware.Canteen, canteenHandler.UpdateMenu)
 	routerGroup.Patch("/menu/order/:id", middleware.Authentication, middleware.Canteen, canteenHandler.UpdateOrder)
