@@ -51,7 +51,7 @@ func (c *CanteenUseCase) CreateCanteen(createCanteen dto.CreateCanteen) (dto.Res
 
 	err := c.canteenRepo.CreateCanteen(&canteen)
 
-	return canteen.ParseToDTORResponseCreateCanteen(), err
+	return canteen.ParseToDTOResponseCreateCanteen(), err
 }
 
 func (c *CanteenUseCase) CreateMenu(createMenu dto.CreateMenu) (dto.ResponseCreateMenu, error) {
@@ -132,7 +132,7 @@ func (c *CanteenUseCase) GetCanteenList() ([]dto.ResponseGetCanteenList, error) 
 	parsedCanteen := make([]dto.ResponseGetCanteenList, len(*canteen))
 
 	for i, c := range *canteen {
-		parsedCanteen[i] = c.ParseToDTORResponseGetCanteenList()
+		parsedCanteen[i] = c.ParseToDTOResponseGetCanteenList()
 	}
 
 	return parsedCanteen, err
@@ -145,7 +145,7 @@ func (c *CanteenUseCase) GetCanteenInfo(canteenID uuid.UUID) (dto.ResponseGetCan
 
 	err := c.canteenRepo.GetCanteenInfo(&canteen)
 
-	return canteen.ParseToDTORResponseGetCanteenInfo(), err
+	return canteen.ParseToDTOResponseGetCanteenInfo(), err
 }
 
 func (c *CanteenUseCase) GetMenuInfo(menuID uuid.UUID) (dto.ResponseGetMenuInfo, error) {

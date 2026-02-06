@@ -18,7 +18,7 @@ type Canteen struct {
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
-func (c *Canteen) ParseToDTORResponseCreateCanteen() dto.ResponseCreateCanteen {
+func (c *Canteen) ParseToDTOResponseCreateCanteen() dto.ResponseCreateCanteen {
 	return dto.ResponseCreateCanteen{
 		ID:        c.ID,
 		UserID:    c.UserID,
@@ -28,14 +28,14 @@ func (c *Canteen) ParseToDTORResponseCreateCanteen() dto.ResponseCreateCanteen {
 	}
 }
 
-func (c *Canteen) ParseToDTORResponseGetCanteenList() dto.ResponseGetCanteenList {
+func (c *Canteen) ParseToDTOResponseGetCanteenList() dto.ResponseGetCanteenList {
 	return dto.ResponseGetCanteenList{
 		ID:   c.ID,
 		Name: c.Name,
 	}
 }
 
-func (c *Canteen) ParseToDTORResponseGetCanteenInfo() dto.ResponseGetCanteenInfo {
+func (c *Canteen) ParseToDTOResponseGetCanteenInfo() dto.ResponseGetCanteenInfo {
 	return dto.ResponseGetCanteenInfo{
 		ID:        c.ID,
 		UserID:    c.UserID,
