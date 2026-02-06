@@ -20,7 +20,7 @@ import (
 
 type CanteenUseCaseItf interface {
 	CreateCanteen(createCanteen dto.CreateCanteen) (dto.ResponseCreateCanteen, error)
-	CreateMenu(createMenu dto.CreateMenu) (dto.ResponseCreateMenu, error)
+	CreateMenu(createMenu dto.CreateMenu, userID uuid.UUID) (dto.ResponseCreateMenu, error)
 	CreateOrder(createOrder dto.CreateOrder) (dto.ResponseCreateOrder, error)
 	CreatePayment(createPayment dto.CreatePayment) (dto.ResponseMidtransOrder, error)
 	VerifyPayment(verifyPayment dto.VerifyPayment) error
@@ -69,7 +69,7 @@ func (c *CanteenUseCase) CreateCanteen(createCanteen dto.CreateCanteen) (dto.Res
 	return canteen.ParseToDTOResponseCreateCanteen(), err
 }
 
-func (c *CanteenUseCase) CreateMenu(createMenu dto.CreateMenu) (dto.ResponseCreateMenu, error) {
+func (c *CanteenUseCase) CreateMenu(createMenu dto.CreateMenu, userID uuid.UUID) (dto.ResponseCreateMenu, error) {
 	menu := entity.Menu{
 		ID:        uuid.New(),
 		CanteenID: createMenu.CanteenID,
@@ -77,7 +77,7 @@ func (c *CanteenUseCase) CreateMenu(createMenu dto.CreateMenu) (dto.ResponseCrea
 		Price:     createMenu.Price,
 	}
 
-	err := c.canteenRepo.CreateMenu(&menu)
+	err := c.canteenRepo.CreateMenu(&menu, userID)
 
 	return menu.ParseToDTOResponseCreateMenu(), err
 }

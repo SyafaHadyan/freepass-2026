@@ -9,7 +9,7 @@ import (
 
 type CanteenDBItf interface {
 	CreateCanteen(canteen *entity.Canteen) error
-	CreateMenu(menu *entity.Menu) error
+	CreateMenu(menu *entity.Menu, userID uuid.UUID) error
 	CreateOrder(menu *entity.Menu, order *entity.Order) error
 	CreatePayment(payment *entity.Payment) error
 	VerifyPayment(order *entity.Order) error
@@ -41,12 +41,21 @@ func (r *CanteenDB) CreateCanteen(canteen *entity.Canteen) error {
 		Error
 }
 
-// TODO: validate canteen ownership
+func (r *CanteenDB) CreateMenu(menu *entity.Menu, userID uuid.UUID) error {
+	sub := r.db.Debug().
+		Model(&entity.Canteen{}).
+		Select("id").
+		Where("user_id = ?", userID)
 
-func (r *CanteenDB) CreateMenu(menu *entity.Menu) error {
-	return r.db.Debug().
-		Create(menu).
-		Error
+	res := r.db.Debug().
+		Model(&entity.Menu{}).
+		Where("canteen_id IN (?)", sub)
+
+	if res.RowsAffected == 0 {
+		return gorm.ErrInvalidValue
+	}
+
+	return res.Error
 }
 
 func (r *CanteenDB) CreateOrder(menu *entity.Menu, order *entity.Order) error {

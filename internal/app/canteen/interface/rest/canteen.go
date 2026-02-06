@@ -85,7 +85,15 @@ func (c *CanteenHandler) CreateCanteen(ctx *fiber.Ctx) error {
 func (c *CanteenHandler) CreateMenu(ctx *fiber.Ctx) error {
 	var createMenu dto.CreateMenu
 
-	err := ctx.BodyParser(&createMenu)
+	userID, err := uuid.Parse(ctx.Locals("userID").(string))
+	if err != nil {
+		return fiber.NewError(
+			http.StatusUnauthorized,
+			"user unauthorized",
+		)
+	}
+
+	err = ctx.BodyParser(&createMenu)
 	if err != nil {
 		return fiber.NewError(
 			http.StatusBadRequest,
@@ -101,7 +109,7 @@ func (c *CanteenHandler) CreateMenu(ctx *fiber.Ctx) error {
 		)
 	}
 
-	res, err := c.CanteenUseCase.CreateMenu(createMenu)
+	res, err := c.CanteenUseCase.CreateMenu(createMenu, userID)
 	if err != nil {
 		return fiber.NewError(
 			http.StatusInternalServerError,
