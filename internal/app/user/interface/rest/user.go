@@ -25,14 +25,13 @@ type UserHandler struct {
 func NewUserHandler(
 	routerGroup fiber.Router, validator *validator.Validate,
 	middleware middleware.MiddlewareItf, userUseCase usecase.UserUseCaseItf,
-	config *env.Env, mailer mailer.MailerItf,
+	config *env.Env,
 ) {
 	userHandler := UserHandler{
 		Validator:   validator,
 		Middleware:  middleware,
 		UserUseCase: userUseCase,
 		Config:      config,
-		Mailer:      mailer,
 	}
 
 	routerGroup = routerGroup.Group("/users")
