@@ -55,7 +55,7 @@ func Start() *Bootstrap {
 	canteenRepository := canteenrepository.NewCanteenDB(database)
 
 	userUseCase := userusecase.NewUserUseCase(userRepository, jwt, redis)
-	canteenUseCase := canteenusecase.NewCanteenUseCase(canteenRepository, payment, redis)
+	canteenUseCase := canteenusecase.NewCanteenUseCase(canteenRepository, payment, config, redis)
 
 	userhandler.NewUserHandler(app.Router, validator, middleware, userUseCase, config)
 	canteenhandler.NewCanteenHandler(app.Router, validator, middleware, canteenUseCase, config)

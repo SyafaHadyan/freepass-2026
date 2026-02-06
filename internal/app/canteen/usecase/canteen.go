@@ -3,12 +3,18 @@ package usecase
 
 import (
 	"context"
+	"crypto/sha512"
+	"encoding/hex"
+	"fmt"
+	"net/http"
 
 	"github.com/SyafaHadyan/freepass-2026/internal/app/canteen/repository"
 	"github.com/SyafaHadyan/freepass-2026/internal/domain/dto"
 	"github.com/SyafaHadyan/freepass-2026/internal/domain/entity"
+	"github.com/SyafaHadyan/freepass-2026/internal/infra/env"
 	"github.com/SyafaHadyan/freepass-2026/internal/infra/payment"
 	redisitf "github.com/SyafaHadyan/freepass-2026/internal/infra/redis"
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
 
@@ -17,6 +23,7 @@ type CanteenUseCaseItf interface {
 	CreateMenu(createMenu dto.CreateMenu) (dto.ResponseCreateMenu, error)
 	CreateOrder(createOrder dto.CreateOrder) (dto.ResponseCreateOrder, error)
 	CreatePayment(createPayment dto.CreatePayment) (dto.ResponseMidtransOrder, error)
+	VerifyPayment(verifyPayment dto.VerifyPayment) error
 	CreateFeedback(createFeedback dto.CreateFeedback) (dto.ResponseCreateFeedback, error)
 	UpdateMenu(updateMenu dto.UpdateMenu) (dto.ResponseUpdateMenu, error)
 	UpdateOrder(updateOrder dto.UpdateOrder, userID uuid.UUID) (dto.ResponseUpdateOrder, error)
@@ -32,17 +39,19 @@ type CanteenUseCaseItf interface {
 type CanteenUseCase struct {
 	canteenRepo  repository.CanteenDBItf
 	Payment      payment.PaymentItf
+	Env          *env.Env
 	redis        redisitf.RedisItf
 	redisContext context.Context
 }
 
 func NewCanteenUseCase(
 	canteenRepo repository.CanteenDBItf, payment payment.PaymentItf,
-	redis redisitf.RedisItf,
+	env *env.Env, redis redisitf.RedisItf,
 ) CanteenUseCaseItf {
 	return &CanteenUseCase{
 		canteenRepo:  canteenRepo,
 		Payment:      payment,
+		Env:          env,
 		redis:        redis,
 		redisContext: context.Background(),
 	}
@@ -122,6 +131,37 @@ func (c *CanteenUseCase) CreatePayment(createPayment dto.CreatePayment) (dto.Res
 	err = c.canteenRepo.CreatePayment(&payment)
 
 	return responseMidtransOrder, err
+}
+
+func (c *CanteenUseCase) VerifyPayment(verifyPayment dto.VerifyPayment) error {
+	orderID, _ := uuid.Parse(verifyPayment.TransactionID)
+
+	signatureKey := fmt.Sprintf(
+		"%s,%s,%s,%s,",
+		verifyPayment.TransactionID,
+		verifyPayment.StatusCode,
+		verifyPayment.GrossAmount,
+		c.Env.MidtransServerKey,
+	)
+
+	hash := sha512.New()
+	hash.Write([]byte(signatureKey))
+	hashedData := hash.Sum(nil)
+	hexHash := hex.EncodeToString(hashedData)
+
+	if hexHash != verifyPayment.SignatureKey {
+		return fiber.NewError(
+			http.StatusUnauthorized,
+			"payment could not be verified")
+	}
+
+	order := entity.Order{
+		ID: orderID,
+	}
+
+	err := c.canteenRepo.VerifyPayment(&order)
+
+	return err
 }
 
 func (c *CanteenUseCase) CreateFeedback(createFeedback dto.CreateFeedback) (dto.ResponseCreateFeedback, error) {

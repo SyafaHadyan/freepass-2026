@@ -9,11 +9,11 @@ import (
 )
 
 type CreatePayment struct {
-	ID          uuid.UUID      `json:"id" gorm:"type:char(36);primaryKey"`
-	OrderID     uuid.UUID      `json:"order_id" gorm:"type:char(36);"`
-	UserID      uuid.UUID      `json:"user_id" gorm:"type:char(36);"`
-	Price       uint32         `json:"price" gorm:"type:uint32"`
-	RedirectURL string         `json:"redirect_url" gorm:"type:varchar(256)"`
+	ID          uuid.UUID      `json:"id"`
+	OrderID     uuid.UUID      `json:"order_id"`
+	UserID      uuid.UUID      `json:"user_id"`
+	Price       uint32         `json:"price"`
+	RedirectURL string         `json:"redirect_url"`
 	CreatedAt   time.Time      `json:"created_at" gorm:"type:timestamp;autoCreateTime"`
 	UpdatedAt   time.Time      `json:"updated_at" gorm:"type:timestamp;autoUpdateTime"`
 	DeletedAt   gorm.DeletedAt `gorm:"index"`
@@ -38,4 +38,12 @@ type CustomerDetail struct {
 type ResponseMidtransOrder struct {
 	Token       string `json:"token"`
 	RedirectURL string `json:"redirect_url"`
+}
+
+type VerifyPayment struct {
+	TransactionStatus string `json:"transaction_status"`
+	TransactionID     string `json:"transaction_id"`
+	SignatureKey      string `json:"signature_key"`
+	StatusCode        string `json:"status_code"`
+	GrossAmount       string `json:"gross_amount"`
 }

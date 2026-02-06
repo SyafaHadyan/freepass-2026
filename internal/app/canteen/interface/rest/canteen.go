@@ -206,6 +206,30 @@ func (c *CanteenHandler) CreatePayment(ctx *fiber.Ctx) error {
 	})
 }
 
+func (c *CanteenHandler) VerifyPayment(ctx *fiber.Ctx) error {
+	var verifyPayment dto.VerifyPayment
+
+	err := ctx.BodyParser(&verifyPayment)
+	if err != nil {
+		return fiber.NewError(
+			http.StatusBadRequest,
+			"failed to parse request body",
+		)
+	}
+
+	err = c.CanteenUseCase.VerifyPayment(verifyPayment)
+	if err != nil {
+		return fiber.NewError(
+			http.StatusInternalServerError,
+			"failed to verify payment",
+		)
+	}
+
+	return ctx.Status(http.StatusOK).JSON(fiber.Map{
+		"message": "payment verified",
+	})
+}
+
 func (c *CanteenHandler) CreateFeedback(ctx *fiber.Ctx) error {
 	var createFeedback dto.CreateFeedback
 
