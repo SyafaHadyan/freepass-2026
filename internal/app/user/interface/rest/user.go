@@ -7,7 +7,6 @@ import (
 	"github.com/SyafaHadyan/freepass-2026/internal/app/user/usecase"
 	"github.com/SyafaHadyan/freepass-2026/internal/domain/dto"
 	"github.com/SyafaHadyan/freepass-2026/internal/infra/env"
-	"github.com/SyafaHadyan/freepass-2026/internal/infra/mailer"
 	"github.com/SyafaHadyan/freepass-2026/internal/middleware"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -19,7 +18,6 @@ type UserHandler struct {
 	Middleware  middleware.MiddlewareItf
 	UserUseCase usecase.UserUseCaseItf
 	Config      *env.Env
-	Mailer      mailer.MailerItf
 }
 
 func NewUserHandler(
