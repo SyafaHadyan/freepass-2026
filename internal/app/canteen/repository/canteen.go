@@ -20,6 +20,7 @@ type CanteenDBItf interface {
 	GetOrderInfo(order *entity.Order) error
 	GetOrderList(order *[]entity.Order, userID uuid.UUID) error
 	SoftDeleteMenu(menu *entity.Menu, userID uuid.UUID) error
+	SoftDeleteFeedback(feedback *entity.Feedback, userID uuid.UUID) error
 }
 
 type CanteenDB struct {
@@ -178,6 +179,30 @@ func (r *CanteenDB) SoftDeleteMenu(menu *entity.Menu, userID uuid.UUID) error {
 		Where("id = ?", menu.ID).
 		Where("canteen_id IN (?)", sub).
 		Delete(menu)
+
+	if res.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+
+	return res.Error
+}
+
+func (r *CanteenDB) SoftDeleteFeedback(feedback *entity.Feedback, userID uuid.UUID) error {
+	canteenSub := r.db.Debug().
+		Model(&entity.Canteen{}).
+		Select("id").
+		Where("user_id = ?", userID)
+
+	orderSub := r.db.Debug().
+		Model(&entity.Order{}).
+		Select("id").
+		Where("status = ?", "FEEDBACKSENT").
+		Where("canteen_id IN (?)", canteenSub)
+
+	res := r.db.Debug().
+		Where("id = ?", feedback.ID).
+		Where("order_id IN (?)", orderSub).
+		Delete(feedback)
 
 	if res.RowsAffected == 0 {
 		return gorm.ErrRecordNotFound

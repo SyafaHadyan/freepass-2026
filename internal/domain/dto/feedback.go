@@ -24,3 +24,7 @@ type ResponseCreateFeedback struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+type SoftDeleteFeedback struct {
+	ID uuid.UUID `json:"id" validate:"required,uuid_rfc4122"`
+}

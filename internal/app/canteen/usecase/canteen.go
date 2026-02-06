@@ -24,6 +24,7 @@ type CanteenUseCaseItf interface {
 	GetOrderInfo(getOrderInfo dto.GetOrderInfo) (dto.ResponseGetOrderInfo, error)
 	GetOrderList(userID uuid.UUID) ([]dto.ResponseGetOrderList, error)
 	SoftDeleteMenu(menuID uuid.UUID, userID uuid.UUID) error
+	SoftDeleteFeedback(feedbackID uuid.UUID, userID uuid.UUID) error
 }
 
 type CanteenUseCase struct {
@@ -192,6 +193,16 @@ func (c *CanteenUseCase) SoftDeleteMenu(menuID uuid.UUID, userID uuid.UUID) erro
 	}
 
 	err := c.canteenRepo.SoftDeleteMenu(&menu, userID)
+
+	return err
+}
+
+func (c *CanteenUseCase) SoftDeleteFeedback(feedbackID uuid.UUID, userID uuid.UUID) error {
+	feedback := entity.Feedback{
+		ID: feedbackID,
+	}
+
+	err := c.canteenRepo.SoftDeleteFeedback(&feedback, userID)
 
 	return err
 }

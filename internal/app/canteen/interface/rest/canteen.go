@@ -46,6 +46,7 @@ func NewCanteenHandler(
 	routerGroup.Get("/menu/:id", middleware.Authentication, canteenHandler.GetMenuInfo)
 	routerGroup.Get("/menu/order", middleware.Authentication, canteenHandler.GetOrderInfo)
 	routerGroup.Delete("/menu/:id", middleware.Authentication, middleware.Canteen, canteenHandler.SoftDeleteMenu)
+	routerGroup.Delete("/menu/order/feedback/:id", middleware.Authentication, middleware.Canteen, canteenHandler.SoftDeleteFeedback)
 }
 
 func (c *CanteenHandler) CreateCanteen(ctx *fiber.Ctx) error {
@@ -466,6 +467,39 @@ func (c *CanteenHandler) SoftDeleteMenu(ctx *fiber.Ctx) error {
 		return fiber.NewError(
 			http.StatusInternalServerError,
 			"failed to delete menu",
+		)
+	}
+
+	return ctx.Status(http.StatusNoContent).Context().Err()
+}
+
+func (c *CanteenHandler) SoftDeleteFeedback(ctx *fiber.Ctx) error {
+	userID, err := uuid.Parse(ctx.Locals("userID").(string))
+	if err != nil {
+		return fiber.NewError(
+			http.StatusUnauthorized,
+			"user unauthorized",
+		)
+	}
+
+	feedbackID, err := uuid.Parse(ctx.Params("id"))
+	if err != nil {
+		return fiber.NewError(
+			http.StatusBadRequest,
+			"invalid menu id",
+		)
+	}
+
+	err = c.CanteenUseCase.SoftDeleteFeedback(feedbackID, userID)
+	if err == gorm.ErrRecordNotFound {
+		return fiber.NewError(
+			http.StatusNotFound,
+			"feedback not found",
+		)
+	} else if err != nil {
+		return fiber.NewError(
+			http.StatusInternalServerError,
+			"failed to delete feedback",
 		)
 	}
 
