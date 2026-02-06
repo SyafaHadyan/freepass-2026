@@ -42,20 +42,21 @@ func (r *CanteenDB) CreateCanteen(canteen *entity.Canteen) error {
 }
 
 func (r *CanteenDB) CreateMenu(menu *entity.Menu, userID uuid.UUID) error {
-	sub := r.db.Debug().
+	var count int64
+
+	r.db.Debug().
 		Model(&entity.Canteen{}).
-		Select("id").
-		Where("user_id = ?", userID)
+		Where("id = ?", menu.CanteenID).
+		Where("user_id = ?", userID).
+		Count(&count)
 
-	res := r.db.Debug().
-		Model(&entity.Menu{}).
-		Where("canteen_id IN (?)", sub)
-
-	if res.RowsAffected == 0 {
-		return gorm.ErrInvalidValue
+	if count == 0 {
+		return gorm.ErrRecordNotFound
 	}
 
-	return res.Error
+	return r.db.Debug().
+		Create(menu).
+		Error
 }
 
 func (r *CanteenDB) CreateOrder(menu *entity.Menu, order *entity.Order) error {
