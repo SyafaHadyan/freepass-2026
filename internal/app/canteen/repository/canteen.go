@@ -21,6 +21,7 @@ type CanteenDBItf interface {
 	GetMenuInfo(menu *entity.Menu) error
 	GetOrderInfo(order *entity.Order) error
 	GetOrderList(order *[]entity.Order, userID uuid.UUID) error
+	GetFeedback(feedback *entity.Feedback) error
 	SoftDeleteMenu(menu *entity.Menu, userID uuid.UUID) error
 	SoftDeleteFeedback(feedback *entity.Feedback, userID uuid.UUID) error
 }
@@ -62,20 +63,23 @@ func (r *CanteenDB) CreateMenu(menu *entity.Menu, userID uuid.UUID) error {
 func (r *CanteenDB) CreateOrder(menu *entity.Menu, order *entity.Order) error {
 	sub := r.db.Debug().
 		Model(&menu).
-		Select("id, canteen_id").
-		Where("stock >= ?", order.Quantity)
+		Select("id, canteen_id, stock").
+		Where("stock >= ?", order.Quantity).
+		First(&menu)
 	if sub == nil {
 		return gorm.ErrInvalidValue
 	}
 
-	order.CanteenID = menu.CanteenID
+	remainingStock := menu.Stock - order.Quantity
+	menu.Stock = remainingStock
 
 	r.db.Debug().
 		Create(order)
 
 	return r.db.Debug().
 		Model(&menu).
-		Update("stock = ?", menu.Stock-order.Quantity).
+		Where("id = ?", menu.ID).
+		Updates(menu).
 		Error
 }
 
@@ -129,29 +133,27 @@ func (r *CanteenDB) UpdateMenu(menu *entity.Menu, userID uuid.UUID) error {
 }
 
 func (r *CanteenDB) UpdateOrder(order *entity.Order, userID uuid.UUID) error {
-	sub := r.db.Debug().
-		Model(&entity.Canteen{}).
-		Select("id").
-		Where("user_id = ?", userID).
-		Where("status = ?", "PAID").
-		Or("status = ?", "COOKING")
-
 	res := r.db.Debug().
+		Model(&entity.Order{}).
 		Where("id = ?", order.ID).
-		Where("canteen_id IN (?)", sub).
-		Update("status = ?", order.Status)
+		Where("status IN ?", []string{"PAID", "COOKING"}).
+		Updates(order)
 
 	if res.RowsAffected == 0 {
 		return gorm.ErrRecordNotFound
 	}
 
-	return res.Error
+	return r.db.Debug().Debug().
+		Select("canteen_id, user_id, menu_id, quantity, created_at, updated_at").
+		First(&order).
+		Error
 }
 
 func (r *CanteenDB) GetCanteenList(canteen *[]entity.Canteen) error {
 	return r.db.Debug().
 		Model(&canteen).
 		Select("id, name").
+		Find(canteen).
 		Error
 }
 
@@ -164,7 +166,7 @@ func (r *CanteenDB) GetCanteenInfo(canteen *entity.Canteen) error {
 
 func (r *CanteenDB) GetMenuInfo(menu *entity.Menu) error {
 	return r.db.Debug().
-		Select("id, canteen_id, name, price, created_at, updated_at").
+		Select("id, canteen_id, name, price, stock, created_at, updated_at").
 		First(&menu).
 		Error
 }
@@ -173,6 +175,7 @@ func (r *CanteenDB) GetOrderInfo(order *entity.Order) error {
 	return r.db.Debug().
 		Select("id, canteen_id, user_id, menu_id, quantity, status, created_at, updated_at").
 		Where("user_id = ?", order.UserID).
+		First(&order).
 		Error
 }
 
@@ -193,6 +196,14 @@ func (r *CanteenDB) GetOrderList(order *[]entity.Order, userID uuid.UUID) error 
 	}
 
 	return res.Error
+}
+
+func (r *CanteenDB) GetFeedback(feedback *entity.Feedback) error {
+	return r.db.Debug().
+		Select("id, order_id, user_id, content, created_at, updated_at").
+		Where("id = ?", feedback.ID).
+		First(&feedback).
+		Error
 }
 
 func (r *CanteenDB) SoftDeleteMenu(menu *entity.Menu, userID uuid.UUID) error {

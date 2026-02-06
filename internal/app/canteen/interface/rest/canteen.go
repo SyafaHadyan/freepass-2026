@@ -41,11 +41,12 @@ func NewCanteenHandler(
 	routerGroup.Post("/payment", middleware.Authentication, canteenHandler.CreatePayment)
 	routerGroup.Post("/menu/order/feedback", middleware.Authentication, canteenHandler.CreateFeedback)
 	routerGroup.Patch("/menu/:id", middleware.Authentication, middleware.Canteen, canteenHandler.UpdateMenu)
-	routerGroup.Patch("/menu/order", middleware.Authentication, middleware.Canteen, canteenHandler.UpdateOrder)
+	routerGroup.Patch("/menu/order/:id", middleware.Authentication, middleware.Canteen, canteenHandler.UpdateOrder)
 	routerGroup.Get("", middleware.Authentication, canteenHandler.GetCanteenList)
 	routerGroup.Get("/:id", middleware.Authentication, canteenHandler.GetCanteenInfo)
 	routerGroup.Get("/menu/:id", middleware.Authentication, canteenHandler.GetMenuInfo)
-	routerGroup.Get("/menu/order", middleware.Authentication, canteenHandler.GetOrderInfo)
+	routerGroup.Get("/menu/order/:id", middleware.Authentication, canteenHandler.GetOrderInfo)
+	routerGroup.Get("/menu/order/feedback/:id", middleware.Authentication, canteenHandler.GetFeeback)
 	routerGroup.Delete("/menu/:id", middleware.Authentication, middleware.Canteen, canteenHandler.SoftDeleteMenu)
 	routerGroup.Delete("/menu/order/feedback/:id", middleware.Authentication, middleware.Canteen, canteenHandler.SoftDeleteFeedback)
 }
@@ -53,13 +54,23 @@ func NewCanteenHandler(
 func (c *CanteenHandler) CreateCanteen(ctx *fiber.Ctx) error {
 	var createCanteen dto.CreateCanteen
 
-	err := ctx.BodyParser(&createCanteen)
+	userID, err := uuid.Parse(ctx.Locals("userID").(string))
+	if err != nil {
+		return fiber.NewError(
+			http.StatusUnauthorized,
+			"user unauthorized",
+		)
+	}
+
+	err = ctx.BodyParser(&createCanteen)
 	if err != nil {
 		return fiber.NewError(
 			http.StatusBadRequest,
 			"failed to parse request body",
 		)
 	}
+
+	createCanteen.UserID = userID
 
 	err = c.Validator.Struct(createCanteen)
 	if err != nil {
@@ -346,6 +357,14 @@ func (c *CanteenHandler) UpdateMenu(ctx *fiber.Ctx) error {
 func (c *CanteenHandler) UpdateOrder(ctx *fiber.Ctx) error {
 	var updateOrder dto.UpdateOrder
 
+	orderID, err := uuid.Parse(ctx.Params("id"))
+	if err != nil {
+		return fiber.NewError(
+			http.StatusBadRequest,
+			"invalid order id",
+		)
+	}
+
 	userID, err := uuid.Parse(ctx.Locals("userID").(string))
 	if err != nil {
 		return fiber.NewError(
@@ -361,6 +380,8 @@ func (c *CanteenHandler) UpdateOrder(ctx *fiber.Ctx) error {
 			"failed to parse request body",
 		)
 	}
+
+	updateOrder.ID = orderID
 
 	err = c.Validator.Struct(updateOrder)
 	if err != nil {
@@ -399,7 +420,7 @@ func (c *CanteenHandler) GetCanteenList(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.Status(http.StatusOK).JSON(fiber.Map{
-		"message": "successfully get canteen list",
+		"message": "successfully retrieved canteen list",
 		"payload": res,
 	})
 }
@@ -422,7 +443,7 @@ func (c *CanteenHandler) GetCanteenInfo(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.Status(http.StatusOK).JSON(fiber.Map{
-		"message": "successfully get canteen info",
+		"message": "successfully retrieved canteen info",
 		"payload": res,
 	})
 }
@@ -453,6 +474,14 @@ func (c *CanteenHandler) GetMenuInfo(ctx *fiber.Ctx) error {
 func (c *CanteenHandler) GetOrderInfo(ctx *fiber.Ctx) error {
 	var getOrderInfo dto.GetOrderInfo
 
+	orderID, err := uuid.Parse(ctx.Params("id"))
+	if err != nil {
+		return fiber.NewError(
+			http.StatusBadRequest,
+			"invalid order id",
+		)
+	}
+
 	userID, err := uuid.Parse(ctx.Locals("userID").(string))
 	if err != nil {
 		return fiber.NewError(
@@ -461,23 +490,8 @@ func (c *CanteenHandler) GetOrderInfo(ctx *fiber.Ctx) error {
 		)
 	}
 
-	err = ctx.BodyParser(&getOrderInfo)
-	if err != nil {
-		return fiber.NewError(
-			http.StatusBadRequest,
-			"failed to parse request body",
-		)
-	}
-
 	getOrderInfo.UserID = userID
-
-	err = c.Validator.Struct(getOrderInfo)
-	if err != nil {
-		return fiber.NewError(
-			http.StatusBadRequest,
-			"invalid request body",
-		)
-	}
+	getOrderInfo.ID = orderID
 
 	res, err := c.CanteenUseCase.GetOrderInfo(getOrderInfo)
 	if err != nil {
@@ -512,6 +526,29 @@ func (c *CanteenHandler) GetOrderList(ctx *fiber.Ctx) error {
 
 	return ctx.Status(http.StatusOK).JSON(fiber.Map{
 		"message": "successfully retrieved order list",
+		"payload": res,
+	})
+}
+
+func (c *CanteenHandler) GetFeeback(ctx *fiber.Ctx) error {
+	feedbackID, err := uuid.Parse(ctx.Params("id"))
+	if err != nil {
+		return fiber.NewError(
+			http.StatusBadRequest,
+			"invalid feedback id",
+		)
+	}
+
+	res, err := c.CanteenUseCase.GetFeedback(feedbackID)
+	if err != nil {
+		return fiber.NewError(
+			http.StatusInternalServerError,
+			"failed to retrieve feedback",
+		)
+	}
+
+	return ctx.Status(http.StatusOK).JSON(fiber.Map{
+		"message": "successfully retrieved feedback",
 		"payload": res,
 	})
 }
