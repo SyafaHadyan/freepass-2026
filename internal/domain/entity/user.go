@@ -35,6 +35,7 @@ func (u *User) ParseToDTOResponseRegister() dto.ResponseRegister {
 	responseRegister.Name = u.Name
 	responseRegister.CreatedAt = u.CreatedAt
 	responseRegister.UpdatedAt = u.UpdatedAt
+	responseRegister.UserDetail.Role = u.UserDetail.Role
 
 	return responseRegister
 }
@@ -48,6 +49,7 @@ func (u *User) ParseToDTOResponseLogin() dto.ResponseLogin {
 	responseLogin.Name = u.Name
 	responseLogin.CreatedAt = u.CreatedAt
 	responseLogin.UpdatedAt = u.UpdatedAt
+	responseLogin.UserDetail.Role = u.UserDetail.Role
 
 	return responseLogin
 }
@@ -61,6 +63,7 @@ func (u *User) ParseToDTOResponseGetUserInfo() dto.ResponseGetUserInfo {
 	responseGetUserInfo.Name = u.Name
 	responseGetUserInfo.CreatedAt = u.CreatedAt
 	responseGetUserInfo.UpdatedAt = u.UpdatedAt
+	responseGetUserInfo.UserDetail.Role = u.UserDetail.Role
 
 	return responseGetUserInfo
 }
@@ -70,6 +73,7 @@ func (u *User) ParseToDTOResponseGetUserInfoPublic() dto.ResponseGetUserInfoPubl
 
 	responseGetUserInfoPublic.Username = u.Username
 	responseGetUserInfoPublic.Name = u.Name
+	responseGetUserInfoPublic.UserDetail.Role = u.UserDetail.Role
 
 	return responseGetUserInfoPublic
 }
@@ -83,6 +87,7 @@ func (u *User) ParseToDTOResponseUpdateUserInfo() dto.ResponseUpdateUserInfo {
 	responseUdpateUserInfo.Name = u.Name
 	responseUdpateUserInfo.CreatedAt = u.CreatedAt
 	responseUdpateUserInfo.UpdatedAt = u.UpdatedAt
+	responseUdpateUserInfo.UserDetail.Role = u.UserDetail.Role
 
 	return responseUdpateUserInfo
 }

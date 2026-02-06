@@ -32,6 +32,7 @@ type CanteenUseCaseItf interface {
 	GetMenuInfo(menuID uuid.UUID) (dto.ResponseGetMenuInfo, error)
 	GetOrderInfo(getOrderInfo dto.GetOrderInfo) (dto.ResponseGetOrderInfo, error)
 	GetOrderList(userID uuid.UUID) ([]dto.ResponseGetOrderList, error)
+	GetFeedback(feedbackID uuid.UUID) (dto.ResponseGetFeedback, error)
 	SoftDeleteMenu(menuID uuid.UUID, userID uuid.UUID) error
 	SoftDeleteFeedback(feedbackID uuid.UUID, userID uuid.UUID) error
 }
@@ -75,6 +76,7 @@ func (c *CanteenUseCase) CreateMenu(createMenu dto.CreateMenu, userID uuid.UUID)
 		CanteenID: createMenu.CanteenID,
 		Name:      createMenu.Name,
 		Price:     createMenu.Price,
+		Stock:     createMenu.Stock,
 	}
 
 	err := c.canteenRepo.CreateMenu(&menu, userID)
@@ -88,11 +90,12 @@ func (c *CanteenUseCase) CreateOrder(createOrder dto.CreateOrder) (dto.ResponseC
 	}
 
 	order := entity.Order{
-		ID:       uuid.New(),
-		UserID:   createOrder.UserID,
-		MenuID:   createOrder.MenuID,
-		Quantity: createOrder.Quantity,
-		Status:   "UNPAID",
+		ID:        uuid.New(),
+		UserID:    createOrder.UserID,
+		CanteenID: createOrder.CanteenID,
+		MenuID:    createOrder.MenuID,
+		Quantity:  createOrder.Quantity,
+		Status:    "UNPAID",
 	}
 
 	err := c.canteenRepo.CreateOrder(&menu, &order)
@@ -101,12 +104,22 @@ func (c *CanteenUseCase) CreateOrder(createOrder dto.CreateOrder) (dto.ResponseC
 }
 
 func (c *CanteenUseCase) CreatePayment(createPayment dto.CreatePayment) (dto.ResponseMidtransOrder, error) {
+	orderInfo := entity.Order{
+		ID: createPayment.OrderID,
+	}
+
+	_ = c.canteenRepo.GetOrderInfo(&orderInfo)
+
+	menuInfo := entity.Menu{
+		ID: orderInfo.MenuID,
+	}
+
 	paymentID := uuid.New()
 
 	createMidtransOrder := dto.CreateMidtransOrder{
 		TransactionDetails: dto.TransactionDetails{
 			OrderID:     paymentID.String(),
-			GrossAmount: createPayment.Price,
+			GrossAmount: orderInfo.Quantity * menuInfo.Price,
 		},
 	}
 
@@ -177,6 +190,7 @@ func (c *CanteenUseCase) CreateFeedback(createFeedback dto.CreateFeedback) (dto.
 		ID:      uuid.New(),
 		OrderID: createFeedback.OrderID,
 		UserID:  createFeedback.UserID,
+		Content: createFeedback.Content,
 	}
 
 	err := c.canteenRepo.CreateFeedback(&feedback)
@@ -189,6 +203,7 @@ func (c *CanteenUseCase) UpdateMenu(updateMenu dto.UpdateMenu) (dto.ResponseUpda
 		ID:    updateMenu.ID,
 		Name:  updateMenu.Name,
 		Price: updateMenu.Price,
+		Stock: updateMenu.Stock,
 	}
 
 	err := c.canteenRepo.UpdateMenu(&menu, updateMenu.UserID)
@@ -199,7 +214,6 @@ func (c *CanteenUseCase) UpdateMenu(updateMenu dto.UpdateMenu) (dto.ResponseUpda
 func (c *CanteenUseCase) UpdateOrder(updateOrder dto.UpdateOrder, userID uuid.UUID) (dto.ResponseUpdateOrder, error) {
 	order := entity.Order{
 		ID:     updateOrder.ID,
-		MenuID: updateOrder.MenuID,
 		Status: updateOrder.Status,
 	}
 
@@ -271,6 +285,16 @@ func (c *CanteenUseCase) GetOrderList(userID uuid.UUID) ([]dto.ResponseGetOrderL
 	}
 
 	return parsedOrder, err
+}
+
+func (c *CanteenUseCase) GetFeedback(feedbackID uuid.UUID) (dto.ResponseGetFeedback, error) {
+	feedback := entity.Feedback{
+		ID: feedbackID,
+	}
+
+	err := c.canteenRepo.GetFeedback(&feedback)
+
+	return feedback.ParseToDTOResponseGetFeedback(), err
 }
 
 func (c *CanteenUseCase) SoftDeleteMenu(menuID uuid.UUID, userID uuid.UUID) error {

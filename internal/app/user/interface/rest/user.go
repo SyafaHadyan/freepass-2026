@@ -37,7 +37,7 @@ func NewUserHandler(
 	routerGroup.Post("/register", userHandler.Register)
 	routerGroup.Post("/login", userHandler.Login)
 	routerGroup.Get("/info", middleware.Authentication, userHandler.GetUserInfo)
-	routerGroup.Patch("/info/:username", middleware.Authentication, userHandler.UpdateUserInfo)
+	routerGroup.Patch("", middleware.Authentication, userHandler.UpdateUserInfo)
 	routerGroup.Patch("/role", middleware.Authentication, middleware.Admin, userHandler.UpdateUserRole)
 	routerGroup.Delete("/:username", middleware.Authentication, middleware.Admin, userHandler.SoftDelete)
 }

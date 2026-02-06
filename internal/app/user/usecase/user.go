@@ -111,15 +111,18 @@ func (u *UserUseCase) UpdateUserInfo(updateUserInfo dto.UpdateUserInfo, userID u
 }
 
 func (u *UserUseCase) UpdateUserRole(updateUserRole dto.UpdateUserRole) (dto.ResponseUpdateUserInfo, error) {
-	user := entity.User{
-		ID:       updateUserRole.ID,
-		Username: updateUserRole.Username,
-		UserDetail: entity.UserDetail{
-			Role: updateUserRole.Role,
-		},
+	userDetail := entity.UserDetail{
+		UserID: updateUserRole.ID,
+		Role:   updateUserRole.Role,
 	}
 
-	err := u.userRepo.UpdateUserRole(&user)
+	user := entity.User{
+		ID:         updateUserRole.ID,
+		Username:   updateUserRole.Username,
+		UserDetail: userDetail,
+	}
+
+	err := u.userRepo.UpdateUserRole(&userDetail)
 	if err != nil {
 		return dto.ResponseUpdateUserInfo{},
 			err
@@ -145,14 +148,14 @@ func (u *UserUseCase) Login(login dto.Login) (dto.ResponseLogin, string, error) 
 			err
 	}
 
+	_ = u.userRepo.GetUserInfo(&user)
+
 	token, err := u.jwt.GenerateToken(user.ID, user.UserDetail.Role)
 	if err != nil {
 		return dto.ResponseLogin{},
 			"",
 			err
 	}
-
-	_ = u.userRepo.GetUserInfo(&user)
 
 	return user.ParseToDTOResponseLogin(), token, nil
 }
@@ -188,7 +191,7 @@ func (u *UserUseCase) GetUserIDFromUsername(username string) (uuid.UUID, error) 
 	}
 
 	go func() {
-		u.redis.Set(key, username)
+		u.redis.Set(key, user.ID.String())
 	}()
 
 	return user.ID, nil

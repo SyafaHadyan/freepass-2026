@@ -12,7 +12,7 @@ type UserDBItf interface {
 	RegisterUserDetail(userDetail *entity.UserDetail) error
 	UpdateUserDetail(userDetail *entity.UserDetail) error
 	UpdateUserInfo(user *entity.User) error
-	UpdateUserRole(user *entity.User) error
+	UpdateUserRole(userDetail *entity.UserDetail) error
 	Login(user *entity.User) error
 	CheckUsername(user *entity.User) error
 	GetUserIDFromUsername(user *entity.User) error
@@ -66,9 +66,10 @@ func (r *UserDB) UpdateUserDetail(userDetail *entity.UserDetail) error {
 	return err
 }
 
-func (r *UserDB) UpdateUserRole(user *entity.User) error {
+func (r *UserDB) UpdateUserRole(userDetail *entity.UserDetail) error {
 	return r.db.Debug().
-		Updates(user).
+		Where("user_id = ?", userDetail.UserID).
+		Updates(&userDetail).
 		Error
 }
 
