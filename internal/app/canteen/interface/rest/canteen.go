@@ -38,6 +38,7 @@ func NewCanteenHandler(
 	routerGroup.Post("", middleware.Authentication, middleware.Canteen, canteenHandler.CreateCanteen)
 	routerGroup.Post("/menu", middleware.Authentication, middleware.Canteen, canteenHandler.CreateMenu)
 	routerGroup.Post("/menu/order", middleware.Authentication, canteenHandler.CreateOrder)
+	routerGroup.Post("/payment", middleware.Authentication, canteenHandler.CreatePayment)
 	routerGroup.Post("/menu/order/feedback", middleware.Authentication, canteenHandler.CreateFeedback)
 	routerGroup.Patch("/menu/:id", middleware.Authentication, middleware.Canteen, canteenHandler.UpdateMenu)
 	routerGroup.Patch("/menu/order", middleware.Authentication, middleware.Canteen, canteenHandler.UpdateOrder)
@@ -158,6 +159,49 @@ func (c *CanteenHandler) CreateOrder(ctx *fiber.Ctx) error {
 
 	return ctx.Status(http.StatusCreated).JSON(fiber.Map{
 		"message": "order created",
+		"payload": res,
+	})
+}
+
+func (c *CanteenHandler) CreatePayment(ctx *fiber.Ctx) error {
+	var createPayment dto.CreatePayment
+
+	userID, err := uuid.Parse(ctx.Locals("userID").(string))
+	if err != nil {
+		return fiber.NewError(
+			http.StatusUnauthorized,
+			"user unauthorized",
+		)
+	}
+
+	err = ctx.BodyParser(&createPayment)
+	if err != nil {
+		return fiber.NewError(
+			http.StatusBadRequest,
+			"failed to parse request body",
+		)
+	}
+
+	createPayment.UserID = userID
+
+	err = c.Validator.Struct(createPayment)
+	if err != nil {
+		return fiber.NewError(
+			http.StatusBadRequest,
+			"invalid request body",
+		)
+	}
+
+	res, err := c.CanteenUseCase.CreatePayment(createPayment)
+	if err != nil {
+		return fiber.NewError(
+			http.StatusInternalServerError,
+			"failed to create payment",
+		)
+	}
+
+	return ctx.Status(http.StatusCreated).JSON(fiber.Map{
+		"message": "payment created",
 		"payload": res,
 	})
 }

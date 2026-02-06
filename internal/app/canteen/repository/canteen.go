@@ -11,6 +11,7 @@ type CanteenDBItf interface {
 	CreateCanteen(canteen *entity.Canteen) error
 	CreateMenu(menu *entity.Menu) error
 	CreateOrder(menu *entity.Menu, order *entity.Order) error
+	CreatePayment(payment *entity.Payment) error
 	CreateFeedback(feedback *entity.Feedback) error
 	UpdateMenu(menu *entity.Menu, userID uuid.UUID) error
 	UpdateOrder(order *entity.Order, userID uuid.UUID) error
@@ -64,6 +65,12 @@ func (r *CanteenDB) CreateOrder(menu *entity.Menu, order *entity.Order) error {
 	return r.db.Debug().
 		Model(&menu).
 		Update("stock = ?", menu.Stock-order.Quantity).
+		Error
+}
+
+func (r *CanteenDB) CreatePayment(payment *entity.Payment) error {
+	return r.db.Debug().
+		Create(payment).
 		Error
 }
 

@@ -5,6 +5,9 @@ import (
 	"log"
 	"time"
 
+	canteenhandler "github.com/SyafaHadyan/freepass-2026/internal/app/canteen/interface/rest"
+	canteenrepository "github.com/SyafaHadyan/freepass-2026/internal/app/canteen/repository"
+	canteenusecase "github.com/SyafaHadyan/freepass-2026/internal/app/canteen/usecase"
 	userhandler "github.com/SyafaHadyan/freepass-2026/internal/app/user/interface/rest"
 	userrepository "github.com/SyafaHadyan/freepass-2026/internal/app/user/repository"
 	userusecase "github.com/SyafaHadyan/freepass-2026/internal/app/user/usecase"
@@ -12,6 +15,7 @@ import (
 	"github.com/SyafaHadyan/freepass-2026/internal/infra/env"
 	fiberapp "github.com/SyafaHadyan/freepass-2026/internal/infra/fiber"
 	"github.com/SyafaHadyan/freepass-2026/internal/infra/jwt"
+	"github.com/SyafaHadyan/freepass-2026/internal/infra/payment"
 	"github.com/SyafaHadyan/freepass-2026/internal/infra/redis"
 	"github.com/SyafaHadyan/freepass-2026/internal/middleware"
 	"github.com/go-playground/validator/v10"
@@ -41,15 +45,20 @@ func Start() *Bootstrap {
 
 	jwt := jwt.New(config)
 
+	payment := payment.New(config)
+
 	app := fiberapp.New(config)
 
 	middleware := middleware.NewMiddleware(*jwt)
 
 	userRepository := userrepository.NewUserDB(database)
+	canteenRepository := canteenrepository.NewCanteenDB(database)
 
 	userUseCase := userusecase.NewUserUseCase(userRepository, jwt, redis)
+	canteenUseCase := canteenusecase.NewCanteenUseCase(canteenRepository, payment, redis)
 
 	userhandler.NewUserHandler(app.Router, validator, middleware, userUseCase, config)
+	canteenhandler.NewCanteenHandler(app.Router, validator, middleware, canteenUseCase, config)
 
 	Bootstrap := Bootstrap{
 		App:       app,

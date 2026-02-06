@@ -7,6 +7,7 @@ import (
 	"github.com/SyafaHadyan/freepass-2026/internal/app/canteen/repository"
 	"github.com/SyafaHadyan/freepass-2026/internal/domain/dto"
 	"github.com/SyafaHadyan/freepass-2026/internal/domain/entity"
+	"github.com/SyafaHadyan/freepass-2026/internal/infra/payment"
 	redisitf "github.com/SyafaHadyan/freepass-2026/internal/infra/redis"
 	"github.com/google/uuid"
 )
@@ -15,6 +16,7 @@ type CanteenUseCaseItf interface {
 	CreateCanteen(createCanteen dto.CreateCanteen) (dto.ResponseCreateCanteen, error)
 	CreateMenu(createMenu dto.CreateMenu) (dto.ResponseCreateMenu, error)
 	CreateOrder(createOrder dto.CreateOrder) (dto.ResponseCreateOrder, error)
+	CreatePayment(createPayment dto.CreatePayment) (dto.ResponseMidtransOrder, error)
 	CreateFeedback(createFeedback dto.CreateFeedback) (dto.ResponseCreateFeedback, error)
 	UpdateMenu(updateMenu dto.UpdateMenu) (dto.ResponseUpdateMenu, error)
 	UpdateOrder(updateOrder dto.UpdateOrder, userID uuid.UUID) (dto.ResponseUpdateOrder, error)
@@ -29,15 +31,18 @@ type CanteenUseCaseItf interface {
 
 type CanteenUseCase struct {
 	canteenRepo  repository.CanteenDBItf
+	Payment      payment.PaymentItf
 	redis        redisitf.RedisItf
 	redisContext context.Context
 }
 
 func NewCanteenUseCase(
-	canteenRepo repository.CanteenDBItf, redis redisitf.RedisItf,
+	canteenRepo repository.CanteenDBItf, payment payment.PaymentItf,
+	redis redisitf.RedisItf,
 ) CanteenUseCaseItf {
 	return &CanteenUseCase{
 		canteenRepo:  canteenRepo,
+		Payment:      payment,
 		redis:        redis,
 		redisContext: context.Background(),
 	}
@@ -84,6 +89,39 @@ func (c *CanteenUseCase) CreateOrder(createOrder dto.CreateOrder) (dto.ResponseC
 	err := c.canteenRepo.CreateOrder(&menu, &order)
 
 	return order.ParseToDTOResponseCreateOrder(), err
+}
+
+func (c *CanteenUseCase) CreatePayment(createPayment dto.CreatePayment) (dto.ResponseMidtransOrder, error) {
+	paymentID := uuid.New()
+
+	createMidtransOrder := dto.CreateMidtransOrder{
+		TransactionDetails: dto.TransactionDetails{
+			OrderID:     paymentID.String(),
+			GrossAmount: createPayment.Price,
+		},
+	}
+
+	res, err := c.Payment.CreatePayment(createMidtransOrder)
+	if err != nil {
+		return dto.ResponseMidtransOrder{}, err
+	}
+
+	responseMidtransOrder := dto.ResponseMidtransOrder{
+		Token:       res.Token,
+		RedirectURL: res.RedirectURL,
+	}
+
+	payment := entity.Payment{
+		ID:          paymentID,
+		OrderID:     createPayment.OrderID,
+		UserID:      createPayment.UserID,
+		Price:       createPayment.Price,
+		RedirectURL: responseMidtransOrder.RedirectURL,
+	}
+
+	err = c.canteenRepo.CreatePayment(&payment)
+
+	return responseMidtransOrder, err
 }
 
 func (c *CanteenUseCase) CreateFeedback(createFeedback dto.CreateFeedback) (dto.ResponseCreateFeedback, error) {
