@@ -41,7 +41,6 @@ func New(env *env.Env) *Redis {
 
 	Redis := Redis{
 		Client:     redis,
-		env:        env.ENV,
 		expiration: env.RedisExpiration,
 	}
 
