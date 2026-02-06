@@ -14,7 +14,7 @@ type Order struct {
 	CanteenID uuid.UUID      `json:"canteen_id" gorm:"type:char(36);"`
 	UserID    uuid.UUID      `json:"user_id" gorm:"type:char(36);"`
 	MenuID    uuid.UUID      `json:"menu_id" gorm:"type:char(36);"`
-	Quantity  uint32         `json:"quantity" gorm:"type:uint32"`
+	Quantity  uint32         `json:"quantity" gorm:"type:integer unsigned"`
 	Status    string         `json:"status" gorm:"type:varchar(128)"`
 	CreatedAt time.Time      `json:"created_at" gorm:"type:timestamp;autoCreateTime"`
 	UpdatedAt time.Time      `json:"updated_at" gorm:"type:timestamp;autoUpdateTime"`
